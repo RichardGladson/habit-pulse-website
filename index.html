@@ -95,20 +95,45 @@ nav a[aria-current]{background:linear-gradient(135deg,rgba(34,211,238,.28),rgba(
  .act{grid-template-columns:1fr}.chk{width:28px;height:28px}.ring.sm{width:62px;height:62px}.ring.sm b{font-size:.8rem}
  .heat{grid-template-rows:repeat(7,10px);grid-auto-columns:10px;gap:2px}.dots i{width:10px;height:10px}.cols{height:90px}
  .hrow{grid-template-columns:1fr}dialog{width:96%;padding:12px}#auth{padding:8px}#auth .card{padding:12px}.clk{font-size:1.3rem}#toast{bottom:64px}}
+/* ===== welcome screen ===== */
+.wel{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,380px);gap:56px;align-items:center;max-width:980px;width:100%}
+.wel>*{animation:in .6s both}.wel>.card{animation-delay:.12s}
+.brandline{color:var(--cy);font-weight:600;margin-bottom:14px}
+.hero h1{font-size:clamp(2rem,5.5vw,3.2rem);line-height:1.08;margin-bottom:14px}
+.lead{font-size:1.08rem;color:var(--tx);opacity:.88;max-width:34em;margin:0 0 22px}
+.pts{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.pts li{display:flex;gap:12px;align-items:flex-start}.pts i{font-style:normal;flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);font-weight:700}
+.pts span{color:var(--mu);font-size:.93rem}.pts b{display:block;color:var(--tx);font-size:1rem}
+#auth .card{max-width:none;border-top:2px solid var(--cy)}
+@media(max-width:860px){.wel{grid-template-columns:minmax(0,1fr);gap:26px;max-width:460px}.hero{text-align:left}}
+@media(max-width:600px){.pts{display:none}.lead{margin-bottom:0}.hero h1{font-size:1.9rem}}
+@media(max-width:320px){.lead{font-size:.9rem}.hero h1{font-size:1.4rem}.brandline{margin-bottom:6px}}
 </style>
 </head>
 <body>
 <div id="splash" class="mu" style="min-height:100vh;display:grid;place-items:center">Loading…</div>
-<div id="auth" hidden><div class="card">
-  <h1 style="color:var(--cy)">Habit Pulse</h1><p class="mu">Show up a little each day. Your progress stays.</p>
-  <div class="tabs" role="tablist"><button id="t-in" role="tab" aria-selected="true">Sign in</button><button id="t-up" role="tab" aria-selected="false">Create account</button></div>
-  <form id="af" novalidate>
-    <label>Username<input id="un" autocomplete="username" autocapitalize="none" maxlength="24"></label>
-    <label>Password<input id="pw" type="password" autocomplete="current-password"></label>
-    <p id="note" class="mu" hidden><small>There is no email recovery. If you forget your password, the account can't be reset.</small></p>
-    <p class="err" id="err" role="alert"></p>
-    <button class="pri" id="sub" style="width:100%">Sign in</button>
-  </form>
+<div id="auth" hidden><div class="wel">
+  <section class="hero">
+    <div class="brandline">◔ Habit Pulse</div>
+    <h1 class="serif">Show up a little each day.</h1>
+    <p class="lead">Habit Pulse is your personal study diary. Log the time you give each subject, watch it add up, and keep going, even after a rough week.</p>
+    <ul class="pts">
+      <li><i style="--c:var(--cy)">✎</i><span><b>A page for every day</b>Log time with a timer or a quick +10 minutes.</span></li>
+      <li><i style="--c:var(--sea)">↺</i><span><b>Progress that stays</b>Missed a day? Nothing is lost. Your history is here when you return.</span></li>
+      <li><i style="--c:var(--vi)">✦</i><span><b>Small wins, noticed</b>Celebrate finished targets, steady weeks and milestones, with no pressure.</span></li>
+    </ul>
+  </section>
+  <div class="card">
+    <h2 id="ct" class="serif" style="margin:0">Welcome back</h2><p id="cs" class="mu" style="margin:4px 0 14px">Pick up where you left off.</p>
+    <div class="tabs" role="tablist"><button id="t-in" role="tab" aria-selected="true">Sign in</button><button id="t-up" role="tab" aria-selected="false">Create account</button></div>
+    <form id="af" novalidate>
+      <label>Username<input id="un" autocomplete="username" autocapitalize="none" maxlength="24"></label>
+      <label>Password<input id="pw" type="password" autocomplete="current-password"></label>
+      <p id="note" class="mu" hidden><small>There is no email recovery. If you forget your password, the account can’t be reset, so keep it somewhere safe.</small></p>
+      <p class="err" id="err" role="alert"></p>
+      <button class="pri" id="sub" style="width:100%">Sign in</button>
+    </form>
+  </div>
 </div></div>
 <div id="app" hidden>
   <nav aria-label="Main">
@@ -333,7 +358,7 @@ function route(){const v=location.hash.slice(1);S.view=V[v]?v:'dash';render();if
 
 /* ===== auth ===== */
 const err=t=>$('err').textContent=t;
-function setMode(m){mode=m;$('t-in').setAttribute('aria-selected',m==='in');$('t-up').setAttribute('aria-selected',m==='up');$('sub').textContent=m==='in'?'Sign in':'Create account';$('note').hidden=m==='in';$('pw').autocomplete=m==='in'?'current-password':'new-password';err('')}
+function setMode(m){mode=m;$('t-in').setAttribute('aria-selected',m==='in');$('t-up').setAttribute('aria-selected',m==='up');$('sub').textContent=m==='in'?'Sign in':'Create account';$('note').hidden=m==='in';$('ct').textContent=m==='in'?'Welcome back':'Start your first page';$('cs').textContent=m==='in'?'Pick up where you left off.':'Choose a username and password. No email needed.';$('pw').autocomplete=m==='in'?'current-password':'new-password';err('')}
 $('t-in').onclick=()=>setMode('in');$('t-up').onclick=()=>setMode('up');
 $('af').onsubmit=async e=>{e.preventDefault();const u=$('un').value.trim().toLowerCase(),p=$('pw').value;err('');
   if(!/^[a-z0-9._-]{3,24}$/.test(u))return err('Username: 3–24 characters using letters, numbers, . _ -');
