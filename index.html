@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090e11">
 <title>Habit Pulse</title>
 <style>
 :root{--bg:#090e11;--bg2:#0f171b;--card:#131d22;--line:#1e2d34;--tx:#e7f2f4;--mu:#8ba2aa;--cy:#22d3ee;--dc:#0e7490;--sea:#2fbf8f}
@@ -58,6 +58,43 @@ dialog{background:var(--card);color:var(--tx);border:1px solid var(--dc);border-
 .ring svg{width:100%;height:100%}.ring.sm{width:84px;height:84px;margin:0}.ring.sm b{font-size:1rem}
 .ring.r_seg .bg{stroke-dasharray:4 7}.ring.r_glow .fg{filter:drop-shadow(0 0 6px var(--cy))}
 .sw{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px}
+/* ===== v4: colour, layout fixes, responsive ===== */
+:root{color-scheme:dark;--vi:#a78bfa;--am:#f59e0b;--ro:#f472b6}
+html{-webkit-text-size-adjust:100%}
+body{background:radial-gradient(700px 420px at 90% -5%,rgba(34,211,238,.18),transparent),radial-gradient(600px 400px at -5% 45%,rgba(167,139,250,.11),transparent),radial-gradient(700px 500px at 60% 110%,rgba(47,191,143,.13),transparent),var(--bg);background-attachment:fixed;overflow-wrap:break-word}
+button{touch-action:manipulation}
+main{margin:0 auto;min-width:0}
+.g{grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
+.row b,.item>span,.ch span{overflow-wrap:anywhere}
+.item{flex-wrap:wrap}.item>span{flex:1 1 140px;min-width:0}
+.act{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:8px}.act>*{width:100%}
+.tb b{flex:1 1 100%}.tb button{flex:1 1 auto}.clk{flex:1 1 auto}
+.hrow{display:grid;grid-template-columns:minmax(0,1fr) 90px auto;gap:8px;align-items:center;margin-bottom:8px}.hrow input{width:100%!important}
+.ch{flex-wrap:wrap}.ch span{flex:1 1 150px;min-width:0}.ch select{flex:0 1 130px}
+dialog{max-height:90dvh;overflow:auto;padding:18px}
+.pri{background:linear-gradient(135deg,var(--cy),var(--sea))}
+h1.serif{background:linear-gradient(90deg,var(--tx) 30%,var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent}
+.msg{background:linear-gradient(135deg,rgba(34,211,238,.16),rgba(47,191,143,.12));border-color:rgba(34,211,238,.4)}
+#toast div{background:linear-gradient(135deg,#0e4a58,#0c3b36)}
+nav a[aria-current]{background:linear-gradient(135deg,rgba(34,211,238,.28),rgba(47,191,143,.22));color:#fff}
+.g>.card:not(.row-d):nth-child(3n+1){border-top:2px solid var(--cy)}.g>.card:not(.row-d):nth-child(3n+2){border-top:2px solid var(--sea)}.g>.card:not(.row-d):nth-child(3n){border-top:2px solid var(--vi)}
+.big{color:var(--cy)}.g>.card:nth-child(2) .big{color:var(--sea)}.g>.card:nth-child(3) .big{color:var(--vi)}
+.bar i{background:var(--c,var(--cy));background:linear-gradient(90deg,color-mix(in srgb,var(--c,var(--cy)) 60%,#000),var(--c,var(--cy)))}
+.row-d{background:linear-gradient(135deg,color-mix(in srgb,var(--c) 14%,#131d22),rgba(9,14,17,.6))}.row-d.done .bar i{background:var(--sea)}
+.cols i{background:linear-gradient(180deg,var(--cy),var(--dc))}.cols .d i{background:linear-gradient(180deg,var(--sea),#157a5b)}
+.dots .q{background:linear-gradient(135deg,var(--sea),var(--cy))}
+@supports(height:100dvh){#auth,#splash{min-height:100dvh!important}}
+@media(min-width:721px) and (max-width:1023px){#app{grid-template-columns:72px 1fr}nav{padding:16px 8px;align-items:center}nav a{justify-content:center;padding:10px}nav a span,nav small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}nav .brand{font-size:0;padding:4px 0 12px}nav .brand::before{content:'HP';font-size:1.05rem}}
+@media(min-width:1400px){main{max-width:1120px}body{font-size:16px}}
+@media(max-width:720px){input,select{font-size:16px}nav{padding-bottom:calc(6px + env(safe-area-inset-bottom))}main{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}#toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
+@media(max-width:480px){h1{font-size:1.4rem}.card{padding:13px}.big{font-size:1.7rem}.hrow{grid-template-columns:minmax(0,1fr) 84px}.hrow button{grid-column:1/-1}}
+@media(max-height:480px) and (orientation:landscape) and (max-width:900px){nav a{min-height:36px;padding:2px 8px}main{padding-bottom:70px}}
+/* very small / round screens (e.g. Wear OS-class browsers) */
+@media(max-width:320px){body{font-size:13px}main{padding:12px max(14px,8vw) 76px}h1{font-size:1.2rem}h2{font-size:.95rem;margin:16px 0 8px}.card{padding:10px;border-radius:12px}.big{font-size:1.4rem}
+ nav{gap:0;padding:4px 8px calc(4px + env(safe-area-inset-bottom))}nav a{padding:4px;min-height:40px;font-size:1.1rem}nav a span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+ .act{grid-template-columns:1fr}.chk{width:28px;height:28px}.ring.sm{width:62px;height:62px}.ring.sm b{font-size:.8rem}
+ .heat{grid-template-rows:repeat(7,10px);grid-auto-columns:10px;gap:2px}.dots i{width:10px;height:10px}.cols{height:90px}
+ .hrow{grid-template-columns:1fr}dialog{width:96%;padding:12px}#auth{padding:8px}#auth .card{padding:12px}.clk{font-size:1.3rem}#toast{bottom:64px}}
 </style>
 </head>
 <body>
@@ -101,7 +138,8 @@ const app=initializeApp(FIREBASE_CONFIG),auth=getAuth(app),db=getDatabase(app);
    Firebase enforces unique emails, so usernames are unique. Only Auth stores the password (hashed). */
 const EMAIL=u=>u+'@habitpulse.invalid';
 const AE={'auth/email-already-in-use':'That username is taken.','auth/invalid-credential':'Username or password is incorrect.','auth/user-not-found':'Username or password is incorrect.','auth/wrong-password':'Username or password is incorrect.','auth/weak-password':'Password must be at least 8 characters.','auth/network-request-failed':'Network problem. Check your connection and try again.','auth/operation-not-allowed':'Enable Email/Password sign-in in Firebase Authentication.','auth/too-many-requests':'Too many attempts. Wait a moment and try again.'};
-const D=[['hindi','Hindi','अ','#5eead4',20],['math','Mathematics','∑','#22d3ee',60],['science','Science','⚛','#34d399',60],['social','Social Studies','◍','#38bdf8',30],['english','English','Aa','#7dd3fc',10]];
+const D=[['hindi','Hindi','अ','#f59e0b',20],['math','Mathematics','∑','#22d3ee',60],['science','Science','⚛','#34d399',60],['social','Social Studies','◍','#a78bfa',30],['english','English','Aa','#f472b6',10]];
+const VC={hindi:'#f59e0b',math:'#22d3ee',science:'#34d399',social:'#a78bfa',english:'#f472b6'};
 const QUAL=1200,ST={todo:'Not started',doing:'In progress',done:'Completed'};
 
 /* ===== utils: all dates are LOCAL dates (YYYY-MM-DD) ===== */
@@ -117,7 +155,7 @@ function toast(t){const e=document.createElement('div');e.textContent=t;$('toast
 /* ===== state & data ===== */
 const S={uid:null,user:null,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,ready:0,view:'dash',online:false,open:{},win:''};
 let unsubs=[],busy=0,mode='in',seeding=0;
-const H=()=>Object.entries(S.habits).filter(([,h])=>!h.archived).map(([id,h])=>({id,...h})).sort((a,b)=>a.order-b.order);
+const H=()=>Object.entries(S.habits).filter(([,h])=>!h.archived).map(([id,h])=>({id,...h,color:VC[id]||h.color})).sort((a,b)=>a.order-b.order);
 const sec=(h,d)=>S.daily[d]?.bySubject?.[h.id]||0;
 const tgt=(h,d)=>d===today()?h.targetMinutes:(S.daily[d]?.targets?.[h.id]??h.targetMinutes);
 const hp=(h,d)=>Math.min(100,Math.floor(sec(h,d)/(tgt(h,d)*60)*100));
@@ -201,12 +239,12 @@ V.progress=()=>{const t=today(),hs=H(),{best}=streaks();let all=0,days=0,bestD=0
   <div class="card"><h3>Time by subject</h3>${hs.map(h=>`<div style="--c:${h.color}"><div class="row"><span>${esc(h.name)}</span><small>${dur(bySub[h.id]||0)}</small></div><div class="bar"><i style="width:${(bySub[h.id]||0)/mx*100}%"></i></div></div>`).join('')}</div></section>
   <div class="card" style="margin-top:14px"><h3>Daily minutes, last 30 days</h3>${bars(30)}</div>`};
 V.settings=()=>`<h1>Settings</h1><section class="card" style="margin-top:14px"><div class="row"><span><b>${esc(S.profile.username||S.user.email.split('@')[0])}</b><br><small>Signed in</small></span><button data-a="logout">Log out</button></div></section>
-  <h2>Subjects and daily targets</h2><div class="card">${H().map(h=>`<div class="row" style="margin-bottom:8px"><input data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Subject name"><input data-ht="${h.id}" type="number" min="1" max="600" value="${h.targetMinutes}" style="width:90px" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')}
-  <form data-f="hab" class="row"><input name="n" placeholder="New subject" maxlength="40" required aria-label="New subject name"><input name="m" type="number" min="1" max="600" value="30" style="width:90px" aria-label="Target minutes"><button class="pri">Add</button></form>
+  <h2>Subjects and daily targets</h2><div class="card">${H().map(h=>`<div class="hrow"><input data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Subject name"><input data-ht="${h.id}" type="number" min="1" max="600" value="${h.targetMinutes}" style="width:90px" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')}
+  <form data-f="hab" class="hrow"><input name="n" placeholder="New subject" maxlength="40" required aria-label="New subject name"><input name="m" type="number" min="1" max="600" value="30" style="width:90px" aria-label="Target minutes"><button class="pri">Add</button></form>
   <p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing a subject hides it but keeps its history.</small></p></div>
   <h2>Time zone policy</h2><div class="card"><p>Days follow this device’s local time (<b>${Intl.DateTimeFormat().resolvedOptions().timeZone}</b>). Each session stores the local date it was recorded on, so travelling never moves old sessions. A day counts toward your streak at 20 minutes of study. Missing a day never removes past progress.</p></div><h2>Reset and delete</h2><div class="card"><div class="row"><span><b>Reset progress</b><br><small>Erases sessions, chapters and rewards. Subjects and targets stay.</small></span><button data-a="reset">Reset progress</button></div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><div class="row"><span><b>Delete account</b><br><small>Permanently removes your account and all of its data.</small></span><button data-a="delacct">Delete account</button></div></div>`;
 function render(){if(!S.uid)return;look();const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
-  m.innerHTML=S.ready?V[S.view]():'Loading…'}
+  m.innerHTML=S.ready?V[S.view]():'Loading…';document.querySelectorAll('.heat').forEach(e=>e.scrollLeft=e.scrollWidth)}
 
 /* ===== rewards: derived from your data and written once (ratchet), so edits, deletes and retries never double-award ===== */
 const joinKey=()=>key(new Date(S.profile.createdAt||Date.now()));
