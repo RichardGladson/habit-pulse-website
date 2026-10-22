@@ -49,6 +49,15 @@ dialog{background:var(--card);color:var(--tx);border:1px solid var(--dc);border-
 #toast div{background:#0e3a45;border:1px solid var(--cy);padding:10px 16px;border-radius:12px;animation:in .25s}@keyframes in{from{opacity:0;transform:translateY(8px)}}
 @media(max-width:720px){#app{display:block}nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line);padding:6px;z-index:5}nav .brand,nav .sp{display:none}nav a{flex-direction:column;gap:0;font-size:.75rem;padding:6px 10px}main{padding:18px 14px 96px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.serif,.note{font-family:"Iowan Old Style",Palatino,Georgia,serif}.serif{font-weight:600}
+.page{background-image:repeating-linear-gradient(transparent 0 35px,rgba(34,211,238,.05) 35px 36px);border-left:3px solid var(--dc);margin-top:14px}
+.note{font-style:italic;color:var(--mu);margin:12px 0}
+.row-d{display:flex;gap:12px;align-items:flex-start;margin-top:10px;background:rgba(9,14,17,.55);transition:border-color .3s}.row-d .bd{flex:1;min-width:0}.row-d .act button{min-height:34px;padding:4px 10px}.row-d.done{border-color:var(--sea)}.row-d.done .bar i{background:var(--sea)}
+.chk{width:34px;height:34px;border-radius:50%;border:2px solid var(--c);display:grid;place-items:center;color:var(--c);font-weight:700;flex:none}.done .chk{background:var(--sea);border-color:var(--sea);color:#032014;animation:pop .45s}
+@keyframes pop{40%{transform:scale(1.25)}}
+.ring svg{width:100%;height:100%}.ring.sm{width:84px;height:84px;margin:0}.ring.sm b{font-size:1rem}
+.ring.r_seg .bg{stroke-dasharray:4 7}.ring.r_glow .fg{filter:drop-shadow(0 0 6px var(--cy))}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px}
 </style>
 </head>
 <body>
@@ -70,6 +79,7 @@ dialog{background:var(--card);color:var(--tx);border:1px solid var(--dc);border-
     <a href="#dash" data-v="dash">◔ <span>Dashboard</span></a>
     <a href="#habits" data-v="habits">✓ <span>Daily Habits</span></a>
     <a href="#progress" data-v="progress">▦ <span>Progress</span></a>
+    <a href="#rewards" data-v="rewards">✦ <span>Rewards</span></a>
     <a href="#settings" data-v="settings">⚙ <span>Settings</span></a>
     <div class="sp"></div><small><i id="dot"></i><span id="dtx">connecting</span></small>
   </nav>
@@ -80,7 +90,7 @@ dialog{background:var(--card);color:var(--tx);border:1px solid var(--dc);border-
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,deleteUser,reauthenticateWithCredential,EmailAuthProvider} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
 import {getDatabase,ref,onValue,update,get,push,query,orderByKey,startAt} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
 /* ===== FIREBASE CONFIG (replace if you use another project) ===== */
@@ -105,7 +115,7 @@ const clk=s=>[s/3600|0,(s/60|0)%60,s%60].map(pad).join(':');
 function toast(t){const e=document.createElement('div');e.textContent=t;$('toast').append(e);setTimeout(()=>e.remove(),4500)}
 
 /* ===== state & data ===== */
-const S={uid:null,user:null,habits:{},daily:{},sessions:{},chapters:{},profile:{},ready:0,view:'dash',online:false,open:{},win:''};
+const S={uid:null,user:null,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,ready:0,view:'dash',online:false,open:{},win:''};
 let unsubs=[],busy=0,mode='in',seeding=0;
 const H=()=>Object.entries(S.habits).filter(([,h])=>!h.archived).map(([id,h])=>({id,...h})).sort((a,b)=>a.order-b.order);
 const sec=(h,d)=>S.daily[d]?.bySubject?.[h.id]||0;
@@ -157,10 +167,8 @@ function msg(){const t=today(),s=tot(t),m=Math.floor(s/60),keys=Object.keys(S.da
   return'A short session is enough to get started today.'}
 const timerBar=()=>{const t=getT();if(!t)return'';const h=S.habits[t.id];
   return`<div class="card tb"><b>${esc(h?.name||'Session')}</b><span id="tclock" class="clk">${clk(el(t))}</span>${t.run?'<button data-a="pause">Pause</button>':'<button data-a="resume">Resume</button>'}<button class="pri" data-a="finish">Finish and save</button><button data-a="discard">Discard</button>${t.int?'<small style="width:100%">Interrupted. Only time up to the last check-in was kept.</small>':''}</div>`};
-const card=h=>{const t=today(),p=hp(h,t),m=Math.floor(sec(h,t)/60);
-  return`<article class="card sub" style="--c:${h.color}"><div class="row"><span class="ico" aria-hidden="true">${esc(h.icon)}</span><div><b>${esc(h.name)}</b><small>${m} / ${h.targetMinutes} min · ${p>=100?'Done':p>0?'In progress':'Not started'}</small></div><b>${p}%</b></div>
-  <div class="bar" role="progressbar" aria-label="${esc(h.name)} progress" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
-  <div class="row"><button data-a="start" data-id="${h.id}">▶ Start</button><button data-a="add" data-id="${h.id}">+ Add time</button></div></article>`};
+const card=h=>{const t=today(),p=hp(h,t),m=Math.floor(sec(h,t)/60),dn=p>=100;
+  return`<article class="card sub row-d ${dn?'done':''}" style="--c:${h.color}"><span class="chk" aria-hidden="true">${dn?'✓':esc(h.icon)}</span><div class="bd"><div class="row"><b>${esc(h.name)}</b><small>${m} / ${h.targetMinutes} min</small></div><div class="bar" role="progressbar" aria-label="${esc(h.name)} progress" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div><div class="row act"><button data-a="start" data-id="${h.id}">▶ Start</button><button data-a="quick" data-id="${h.id}">+10 min</button><button data-a="add" data-id="${h.id}">Add time</button></div></div></article>`};
 function bars(n){const t=today(),hs=H(),goal=hs.reduce((a,h)=>a+h.targetMinutes,0),days=[];
   for(let i=n-1;i>=0;i--)days.push(add(t,-i));const mx=Math.max(goal,...days.map(d=>tot(d)/60),1);
   if(!Object.keys(S.daily).length)return'<p class="mu">No sessions yet. Your days will appear here.</p>';
@@ -168,14 +176,14 @@ function bars(n){const t=today(),hs=H(),goal=hs.reduce((a,h)=>a+h.targetMinutes,
 function recent(n,ctl){const l=[];for(const[d,m]of Object.entries(S.sessions))for(const[id,r]of Object.entries(m))l.push({d,id,...r});
   l.sort((a,b)=>b.endedAt-a.endedAt);if(!l.length)return'<p class="mu">Nothing logged yet. Start a timer or add time you studied away from the screen.</p>';
   return l.slice(0,n).map(r=>`<div class="item"><span>${esc(r.habitName)} <small>${r.d} · ${dur(r.seconds)}${r.notes?' · '+esc(r.notes):''}</small></span>${ctl?`<button data-a="edit" data-d="${r.d}" data-id="${r.id}">Edit</button><button data-a="del" data-d="${r.d}" data-id="${r.id}">Delete</button>`:''}</div>`).join('')}
-V.dash=()=>{const t=today(),o=overall(t),{cur,best}=streaks(),c=cons(),dots=[];
-  for(let i=29;i>=0;i--){const d=add(t,-i);dots.push(`<i class="${q(d)?'q':''}" title="${d}"></i>`)}
-  return`<h1>${greet()}</h1><p class="mu">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})}</p><p class="msg">${msg()}</p>${timerBar()}
-  <section class="g"><div class="card" style="text-align:center"><div class="ring" role="progressbar" aria-label="Overall progress today" aria-valuenow="${o.pct}" aria-valuemin="0" aria-valuemax="100"><svg width="140" height="140"><circle class="bg" cx="70" cy="70" r="56"/><circle class="fg ${o.pct>=100?'ok':''}" cx="70" cy="70" r="56" stroke-dasharray="${o.pct*3.5186} 352"/></svg><b>${o.pct}%</b></div><p style="margin:8px 0 0"><b>${dur(tot(t))}</b> of ${dur(o.goal*60)} today</p></div>
-  <div class="card"><div class="mu">Current streak</div><div class="big">${cur} ${cur===1?'day':'days'}</div><p class="mu">Longest: ${best} ${best===1?'day':'days'}. A day counts at 20 minutes.</p></div>
-  <div class="card"><div class="mu">Last 30 days</div><div class="big">${c.pct}%</div><small>${c.n} of ${c.den} days counted</small><div class="dots" role="img" aria-label="${c.n} qualifying days in the last 30">${dots.join('')}</div></div></section>
-  <h2>Today’s subjects</h2><div class="g">${H().map(card).join('')}</div>
-  <div class="g2"><div class="card"><h3>Last 7 days</h3>${bars(7)}</div><div class="card"><h3>Recent activity</h3>${recent(5,false)}</div></div>`};
+V.dash=()=>{const t=today(),o=overall(t),{cur,best}=streaks(),c=cons(),jd=joinKey(),hs=H(),dots=[];
+  for(let i=29;i>=0;i--){const d=add(t,-i);if(d>=jd)dots.push(`<i class="${q(d)?'q':''}" title="${d}"></i>`)}
+  const done=hs.filter(h=>hp(h,t)>=100).length,b=sel('badge')?CAT[sel('badge')].v:'';
+  return`<p class="mu" style="margin:0">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})}</p><h1 class="serif">${greet()} ${b}</h1>${timerBar()}
+  <section class="card page"><div class="row"><div><h2 class="serif" style="margin:0">Today’s page</h2><small>${done} of ${hs.length} subjects done · ${dur(tot(t))} studied</small></div><div class="ring sm ${sel('ring')}" role="progressbar" aria-label="Overall progress today" aria-valuenow="${o.pct}" aria-valuemin="0" aria-valuemax="100"><svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="56"/><circle class="fg ${o.pct>=100?'ok':''}" cx="70" cy="70" r="56" stroke-dasharray="${o.pct*3.5186} 352"/></svg><b>${o.pct}%</b></div></div>
+  <p class="note">${msg()}</p>${hs.map(card).join('')||'<p class="mu">Add a subject in Settings to start your first page.</p>'}</section>
+  <h2 class="serif">A glance back</h2><div class="g"><div class="card"><div class="mu">Current streak</div><div class="big">${cur} ${cur===1?'day':'days'}</div><small>Longest ${best}. Your history stays even when a streak resets.</small></div><div class="card"><div class="mu">Since you joined (up to 30 days)</div><div class="big">${c.pct}%</div><small>${c.n} of ${c.den} days counted</small><div class="dots" role="img" aria-label="${c.n} qualifying days">${dots.join('')}</div></div></div>
+  <div class="g2"><div class="card"><h3>Last 7 days</h3>${bars(7)}</div><div class="card"><h3>Recent entries</h3>${recent(5,false)}</div></div>`};
 const chap=h=>{const cs=Object.entries(S.chapters[h.id]||{}),dn=cs.filter(([,c])=>c.status==='done').length;
   return`<details class="card" data-o="${h.id}" ${S.open[h.id]?'open':''}><summary>${esc(h.icon)} ${esc(h.name)} <small>· ${dn}/${cs.length} chapters completed</small></summary>
   ${cs.map(([id,c])=>`<div class="row ch"><span>${esc(c.title)}</span><select data-ch="${h.id}|${id}" aria-label="Status of ${esc(c.title)}">${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${c.status===k?'selected':''}>${v}</option>`).join('')}</select><button data-a="chren" data-k="${h.id}|${id}" aria-label="Rename">✎</button><button data-a="chdel" data-k="${h.id}|${id}" aria-label="Remove">✕</button></div>`).join('')||'<p class="mu">No chapters yet. Add the first one below.</p>'}
@@ -184,11 +192,11 @@ V.habits=()=>`<h1>Daily habits</h1>${timerBar()}<div class="g" style="margin-top
   <h2>Session log</h2><div class="card">${recent(30,true)}</div><h2>Chapters</h2><div class="g">${H().map(chap).join('')}</div>`;
 V.progress=()=>{const t=today(),hs=H(),{best}=streaks();let all=0,days=0,bestD=0;const bySub={};
   for(const[d,v]of Object.entries(S.daily)){all+=v.seconds;days++;bestD=Math.max(bestD,v.seconds);for(const[k,s]of Object.entries(v.bySubject||{}))bySub[k]=(bySub[k]||0)+s}
-  const cells=[],dow=(new Date().getDay()+6)%7,start=add(t,-(25*7+dow));
-  for(let i=0;i<25*7+dow+1;i++){const d=add(start,i),m=Math.floor(tot(d)/60),l=m>=120?4:m>=60?3:m>=20?2:m>0?1:0;cells.push(`<i class="${l?'l'+l:''}" role="img" aria-label="${d}: ${m} minutes" title="${d}: ${m} min"></i>`)}
+  const cells=[],dow=(new Date().getDay()+6)%7,jd=joinKey(),start=jd>add(t,-(25*7+dow))?jd:add(t,-(25*7+dow));for(let k=(new Date(start+'T00:00').getDay()+6)%7;k>0;k--)cells.push('<i style="visibility:hidden"></i>');
+  for(let i=0;add(start,i)<=t;i++){const d=add(start,i),m=Math.floor(tot(d)/60),l=m>=120?4:m>=60?3:m>=20?2:m>0?1:0;cells.push(`<i class="${l?'l'+l:''}" role="img" aria-label="${d}: ${m} minutes" title="${d}: ${m} min"></i>`)}
   let chd=0,cht=0;for(const m of Object.values(S.chapters))for(const c of Object.values(m)){cht++;if(c.status==='done')chd++}
   const mx=Math.max(...Object.values(bySub),1);
-  return`<h1>Progress</h1><div class="card" style="margin-top:14px"><h3>Activity, last 26 weeks</h3><div class="heat">${cells.join('')}</div><small>Darker to green = more minutes (1–19, 20–59, 60–119, 120+). Weeks start on Monday.</small></div>
+  return`<h1>Progress</h1><div class="card" style="margin-top:14px"><h3>Activity since you joined</h3><div class="heat">${cells.join('')}</div><small>Darker to green = more minutes (1–19, 20–59, 60–119, 120+). Weeks start on Monday.</small></div>
   <section class="g2"><div class="card"><h3>Totals (last 13 months)</h3><div class="item"><span>Total study time</span><b>${dur(all)}</b></div><div class="item"><span>Days with study</span><b>${days}</b></div><div class="item"><span>Longest streak</span><b>${best} days</b></div><div class="item"><span>Best single day</span><b>${dur(bestD)}</b></div><div class="item"><span>Chapters completed</span><b>${chd} of ${cht}</b></div></div>
   <div class="card"><h3>Time by subject</h3>${hs.map(h=>`<div style="--c:${h.color}"><div class="row"><span>${esc(h.name)}</span><small>${dur(bySub[h.id]||0)}</small></div><div class="bar"><i style="width:${(bySub[h.id]||0)/mx*100}%"></i></div></div>`).join('')}</div></section>
   <div class="card" style="margin-top:14px"><h3>Daily minutes, last 30 days</h3>${bars(30)}</div>`};
@@ -196,10 +204,44 @@ V.settings=()=>`<h1>Settings</h1><section class="card" style="margin-top:14px"><
   <h2>Subjects and daily targets</h2><div class="card">${H().map(h=>`<div class="row" style="margin-bottom:8px"><input data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Subject name"><input data-ht="${h.id}" type="number" min="1" max="600" value="${h.targetMinutes}" style="width:90px" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')}
   <form data-f="hab" class="row"><input name="n" placeholder="New subject" maxlength="40" required aria-label="New subject name"><input name="m" type="number" min="1" max="600" value="30" style="width:90px" aria-label="Target minutes"><button class="pri">Add</button></form>
   <p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing a subject hides it but keeps its history.</small></p></div>
-  <h2>Time zone policy</h2><div class="card"><p>Days follow this device’s local time (<b>${Intl.DateTimeFormat().resolvedOptions().timeZone}</b>). Each session stores the local date it was recorded on, so travelling never moves old sessions. A day counts toward your streak at 20 minutes of study. Missing a day never removes past progress.</p></div>`;
-function render(){if(!S.uid)return;const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
+  <h2>Time zone policy</h2><div class="card"><p>Days follow this device’s local time (<b>${Intl.DateTimeFormat().resolvedOptions().timeZone}</b>). Each session stores the local date it was recorded on, so travelling never moves old sessions. A day counts toward your streak at 20 minutes of study. Missing a day never removes past progress.</p></div><h2>Reset and delete</h2><div class="card"><div class="row"><span><b>Reset progress</b><br><small>Erases sessions, chapters and rewards. Subjects and targets stay.</small></span><button data-a="reset">Reset progress</button></div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><div class="row"><span><b>Delete account</b><br><small>Permanently removes your account and all of its data.</small></span><button data-a="delacct">Delete account</button></div></div>`;
+function render(){if(!S.uid)return;look();const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
   m.innerHTML=S.ready?V[S.view]():'Loading…'}
 
+/* ===== rewards: derived from your data and written once (ratchet), so edits, deletes and retries never double-award ===== */
+const joinKey=()=>key(new Date(S.profile.createdAt||Date.now()));
+const CAT={a_teal:{k:'accent',n:'Teal',c:40,v:'#2dd4bf'},a_sky:{k:'accent',n:'Sky',c:60,v:'#38bdf8'},a_sea:{k:'accent',n:'Sea green',c:80,v:'#2fbf8f'},r_seg:{k:'ring',n:'Segmented ring',c:60},r_glow:{k:'ring',n:'Glow ring',c:90},b_pulse:{k:'badge',n:'Pulse',c:30,v:'◉'},b_steady:{k:'badge',n:'Steady',c:50,v:'≈'},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎'},b_back:{k:'badge',n:'Comeback',c:50,v:'↺'}};
+const MS={hours:['Study hours','h',[5,10,25,50,100]],chapters:['Chapters completed','',[1,5,10,25]],days:['Qualifying days','',[3,7,14,30,60,100]],streak:['Day streak','',[3,7,14,30,60]]};
+const sel=k=>{const i=S.rw.sel?.[k];return i&&S.rw.unlocked?.[i]?i:''};
+function look(){document.documentElement.style.setProperty('--cy',sel('accent')?CAT[sel('accent')].v:'#22d3ee')}
+function met(){let s=0,d=0,c=0;for(const v of Object.values(S.daily)){s+=v.seconds;if(v.seconds>=QUAL)d++}
+  for(const m of Object.values(S.chapters))for(const x of Object.values(m))if(x.status==='done')c++;return{hours:s/3600,chapters:c,days:d,streak:streaks().best}}
+function earned(){let p=0;for(const r of Object.values(S.rw.days||{}))p+=(r.m||0)+10*Object.keys(r.s||{}).length+25*(r.a||0);return p+20*Object.keys(S.rw.weeks||{}).length+15*Object.keys(S.rw.back||{}).length}
+const avail=()=>earned()-Object.keys(S.rw.unlocked||{}).reduce((a,i)=>a+(CAT[i]?.c||0),0);
+let syncing=0;
+function sync(){if(!S.uid||S.dying||syncing||Object.keys(S.got).length<6)return;const u={},hs=H(),notes=[];let gain=0;
+  for(const[d,v]of Object.entries(S.daily)){const old=(S.rw.days||{})[d]||{},s={...(old.s||{})};let a=old.a||0,n=0;
+    const m=Math.max(old.m||0,Math.min(60,Math.floor(v.seconds/300)));
+    for(const h of hs)if((v.bySubject?.[h.id]||0)>=(d===today()?h.targetMinutes:(v.targets?.[h.id]??h.targetMinutes))*60&&!s[h.id]){s[h.id]=true;n++}
+    if(!a&&hs.length&&hs.every(h=>s[h.id])){a=1;gain+=25;notes.push('Every target done in one day')}
+    gain+=m-(old.m||0)+10*n;if(m!==(old.m||0)||n||a!==(old.a||0))u['rewards/days/'+d]={m,s,a}}
+  const ds=Object.keys(S.daily).filter(q).sort(),wk={};
+  ds.forEach((d,i)=>{const w=add(d,-((new Date(d+'T00:00').getDay()+6)%7));wk[w]=(wk[w]||0)+1;
+    if(i&&num(d)-num(ds[i-1])>=3&&!S.rw.back?.[d]){u['rewards/back/'+d]=Date.now();gain+=15;notes.push('Welcome back. Your progress was waiting for you')}});
+  for(const[w,c]of Object.entries(wk))if(c>=5&&!S.rw.weeks?.[w]){u['rewards/weeks/'+w]=Date.now();gain+=20;notes.push('A steady week: 5 study days')}
+  const mt=met();for(const[k,[n,un,ts]]of Object.entries(MS))for(const t of ts)if(mt[k]>=t&&!S.rw.ms?.[k+'_'+t]){u[`rewards/ms/${k}_${t}`]=Date.now();notes.push(`Milestone: ${t}${un} ${n.toLowerCase()}`)}
+  if(!Object.keys(u).length)return;syncing=1;update(ref(db,'users/'+S.uid),u).catch(()=>{}).finally(()=>syncing=0);
+  notes.forEach(x=>toast('✦ '+x));if(gain>0)toast(`+${gain} Pulse Points`)}
+V.rewards=()=>{const mt=met(),a=avail(),ms=S.rw.ms||{},un=S.rw.unlocked||{},rec=Object.entries(ms).sort((x,y)=>y[1]-x[1]).slice(0,5);
+  const prog=Object.entries(MS).map(([k,[n,u,ts]])=>{const nx=ts.find(t=>!ms[k+'_'+t]),v=mt[k],p=nx?Math.min(100,v/nx*100):100;
+    return`<div class="card"><div class="row"><b>${n}</b><small>${nx?`${Math.floor(v*10)/10}${u} of ${nx}${u}`:'All reached'}</small></div><div class="bar" role="progressbar" aria-label="${n}" aria-valuenow="${Math.round(p)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div><small>${ts.map(t=>(ms[k+'_'+t]?'✓ ':'')+t+u).join(' · ')}</small></div>`}).join('');
+  const item=([i,c])=>{const own=un[i],on=sel(c.k)===i;return`<div class="item"><span>${c.k==='accent'?`<i class="sw" style="background:${c.v}"></i>`:c.k==='badge'?c.v+' ':''}${c.n} <small>${own?'Unlocked':c.c+' points'}</small></span>${own?`<button data-a="use" data-id="${i}" data-k="${c.k}" ${on?'disabled':''}>${on?'In use':'Use'}</button>`:`<button data-a="buy" data-id="${i}" ${a<c.c?'disabled':''}>Unlock</button>`}</div>`};
+  const dn={accent:'Bright cyan',ring:'Solid ring',badge:'No badge'},tt={accent:'Accent colours',ring:'Progress rings',badge:'Profile badges'};
+  return`<h1 class="serif">Rewards</h1><p class="msg">Points come from studying, hitting targets, steady weeks and coming back after a break. They never expire, and a missed day takes nothing away.</p>
+  <div class="g" style="margin-top:14px"><div class="card"><div class="mu">Available Pulse Points</div><div class="big">${a}</div><small>${earned()} earned in total</small></div><div class="card"><div class="mu">How points work</div><small>1 per 5 minutes (up to 60 a day) · 10 per subject target · 25 for all targets in a day · 20 for a week with 5 study days · 15 for returning after a break. Each is earned once.</small></div></div>
+  <h2 class="serif">Milestones</h2><div class="g">${prog}</div>
+  <h2 class="serif">Recent achievements</h2><div class="card">${rec.map(([id,t])=>{const[k,v]=id.split('_');return`<div class="item"><span>✦ ${v}${MS[k][1]} ${MS[k][0].toLowerCase()} <small>${new Date(t).toLocaleDateString()}</small></span></div>`}).join('')||'<p class="mu">Your first milestone is closer than it looks.</p>'}</div>
+  <h2 class="serif">Unlockables</h2><div class="card">${['accent','ring','badge'].map(k=>`<h3>${tt[k]}</h3><div class="item"><span>${k==='accent'?'<i class="sw" style="background:#22d3ee"></i>':''}${dn[k]} <small>Default</small></span><button data-a="use" data-id="none" data-k="${k}" ${sel(k)?'':'disabled'}>${sel(k)?'Use':'In use'}</button></div>${Object.entries(CAT).filter(([,c])=>c.k===k).map(item).join('')}`).join('')}</div>`};
 /* ===== dialogs ===== */
 function sessDlg(o){const hs=Object.entries(S.habits).filter(([i,h])=>!h.archived||i===o.h);const id=o.id||push(ref(db)).key;
   $('dlg').innerHTML=`<form data-f="sess"><h3>${o.id?'Edit session':'Add study time'}</h3><label>Subject<select name="h">${hs.map(([i,h])=>`<option value="${i}" ${i===o.h?'selected':''}>${esc(h.name)}</option>`).join('')}</select></label>
@@ -218,6 +260,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
     if(s<30){setT(null);render();return toast('Under 30 seconds, so nothing was saved.')}
     const sid=push(ref(db)).key;await commit([{d:today(),id:sid,rec:{habitId:t.id,habitName:h?.name||'Study',seconds:s,startedAt:t.start,endedAt:Date.now(),source:'timer'}}]);setT(null);render();toast('Session saved.')});
   if(a==='add')return sessDlg({h:id});
+  if(a==='quick')return run(()=>commit([{d:today(),id:push(ref(db)).key,rec:{habitId:id,habitName:S.habits[id].name,seconds:600,startedAt:Date.now(),endedAt:Date.now(),source:'manual'}}]));
+  if(a==='buy')return run(async()=>{const c=CAT[id];if(!c||S.rw.unlocked?.[id]||avail()<c.c)return toast('Not enough Pulse Points yet.');await W({['rewards/unlocked/'+id]:Date.now()});toast('✦ Unlocked: '+c.n)});
+  if(a==='use')return run(()=>W({['rewards/sel/'+b.dataset.k]:id==='none'?null:id}));
+  if(a==='reset'){if(prompt('This erases all study sessions, chapters and rewards. Your subjects and targets stay. Type RESET to continue.')==='RESET')run(async()=>{if(!S.online)return toast('Connect to the internet first.');await update(ref(db,'users/'+S.uid),{daily:null,sessions:null,chapters:null,rewards:null});setT(null);toast('Progress reset. A fresh start.')});return}
+  if(a==='delacct'){$('dlg').innerHTML=`<form data-f="del"><h3>Delete account</h3><p class="mu">This permanently deletes your account and all of its data. It can’t be undone.</p><label>Confirm your password<input name="p" type="password" autocomplete="current-password" required></label><p class="err" id="derr" role="alert"></p><div class="row"><button type="button" data-a="close">Cancel</button><button class="pri">Delete everything</button></div></form>`;return $('dlg').showModal()}
   if(a==='edit'){const r=S.sessions[d]?.[id];if(r)sessDlg({id,h:r.habitId,m:Math.round(r.seconds/60),d,o:d,n:r.notes})}
   if(a==='del'&&confirm('Delete this session? Totals and streaks will be recalculated.'))return run(()=>commit([{d,id,rec:null}]));
   if(a==='chren'){const[h,c]=b.dataset.k.split('|'),n=prompt('Rename chapter',S.chapters[h]?.[c]?.title);if(n&&n.trim())run(()=>W({[`chapters/${h}/${c}/title`]:n.trim().slice(0,80),[`chapters/${h}/${c}/updatedAt`]:Date.now()}))}
@@ -236,6 +283,10 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
     const old=od?S.sessions[od]?.[id]:null,n=F.get('n').trim(),rec={habitId:F.get('h'),habitName:h.name,seconds:m*60,startedAt:old?.startedAt||Date.now(),endedAt:old?.endedAt||Date.now(),source:old?.source||'manual'};
     if(n)rec.notes=n;const ch=[];if(od&&od!==d)ch.push({d:od,id,rec:null});ch.push({d,id,rec});
     await commit(ch);$('dlg').close();toast(od?'Session updated.':'Time added.')});
+  if(k==='del')run(async()=>{const u=auth.currentUser,er=$('derr');
+    try{await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,F.get('p')))}catch(x){return er.textContent=x.code==='auth/network-request-failed'?'Network problem. Try again.':'Password is incorrect.'}
+    if(!S.online)return er.textContent='Connect to the internet first.';
+    S.dying=1;await update(ref(db,'users/'+S.uid),{profile:null,habits:null,daily:null,sessions:null,chapters:null,rewards:null});setT(null);await deleteUser(u);$('dlg').close()});
   if(k==='ch'){const t=F.get('t').trim();if(!t)return;const id=push(ref(db)).key,h=f.dataset.h;S.open[h]=true;run(()=>W({[`chapters/${h}/${id}`]:{title:t.slice(0,80),status:'todo',updatedAt:Date.now()}}))}
   if(k==='hab'){const hs=Object.values(S.habits),pal=['#5eead4','#22d3ee','#34d399','#38bdf8','#7dd3fc','#2dd4bf'],id=push(ref(db)).key;
     run(()=>W({['habits/'+id]:{name:F.get('n').trim().slice(0,40),icon:'●',color:pal[hs.length%6],targetMinutes:Math.min(600,Math.max(1,Math.round(+F.get('m')))),order:Math.max(-1,...hs.map(h=>h.order))+1}}))}});
@@ -258,12 +309,12 @@ async function seed(){if(seeding)return;seeding=1;const b='users/'+S.uid;
   try{if((await get(ref(db,b+'/profile/seeded'))).val())return;const habits={};D.forEach((d,i)=>habits[d[0]]={name:d[1],icon:d[2],color:d[3],targetMinutes:d[4],order:i});
     await update(ref(db,b),{profile:{username:S.user.email.split('@')[0],createdAt:Date.now(),seeded:true},habits})}
   catch(e){toast('Could not set up your account data ('+(e.code||'error')+'). Reload to retry.');seeding=0}}
-function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(from?query(ref(db,b+p),orderByKey(),startAt(from)):ref(db,b+p),s=>{fn(s.val()||{});render()},e=>toast('Could not load '+p+' ('+e.code+').')));
+function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(from?query(ref(db,b+p),orderByKey(),startAt(from)):ref(db,b+p),s=>{fn(s.val()||{});S.got[p]=1;render();sync()},e=>toast('Could not load '+p+' ('+e.code+').')));
   S.win=add(today(),-14);
-  L('profile',v=>{S.profile=v;if(!v.seeded)seed()});L('habits',v=>{S.habits=v;S.ready=1});
-  L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);
+  L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed()});L('habits',v=>{S.habits=v;S.ready=1});
+  L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);
   const t=getT();if(t&&chk(t))toast('A session was interrupted. Only time up to the last check-in was kept.');route()}
-onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];Object.assign(S,{ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{}});seeding=0;
+onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];Object.assign(S,{ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0});seeding=0;
   if(!u){S.uid=null;show('auth');return}
   S.uid=u.uid;S.user=u;show('app');boot()});
 onValue(ref(db,'.info/connected'),s=>{S.online=!!s.val();$('dot').className=S.online?'on':'';$('dtx').textContent=S.online?'online':'offline'});
