@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090e11">
-<title>Habit Pulse</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090e11"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E🔥%3C/text%3E%3C/svg%3E">
+<title>Streak Forge</title>
 <style>
 :root{--bg:#090e11;--bg2:#0f171b;--card:#131d22;--line:#1e2d34;--tx:#e7f2f4;--mu:#8ba2aa;--cy:#22d3ee;--dc:#0e7490;--sea:#2fbf8f}
 *{box-sizing:border-box}
@@ -84,7 +84,7 @@ nav a[aria-current]{background:linear-gradient(135deg,rgba(34,211,238,.28),rgba(
 .cols i{background:linear-gradient(180deg,var(--cy),var(--dc))}.cols .d i{background:linear-gradient(180deg,var(--sea),#157a5b)}
 .dots .q{background:linear-gradient(135deg,var(--sea),var(--cy))}
 @supports(height:100dvh){#auth,#splash{min-height:100dvh!important}}
-@media(min-width:721px) and (max-width:1023px){#app{grid-template-columns:72px 1fr}nav{padding:16px 8px;align-items:center}nav a{justify-content:center;padding:10px}nav a span,nav small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}nav .brand{font-size:0;padding:4px 0 12px}nav .brand::before{content:'HP';font-size:1.05rem}}
+@media(min-width:721px) and (max-width:1023px){#app{grid-template-columns:72px 1fr}nav{padding:16px 8px;align-items:center}nav a{justify-content:center;padding:10px}nav a span,nav small{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}nav .brand{font-size:0;padding:4px 0 12px}nav .brand::before{content:'🔥';font-size:1.05rem}}
 @media(min-width:1400px){main{max-width:1120px}body{font-size:16px}}
 @media(max-width:720px){input,select{font-size:16px}nav{padding-bottom:calc(6px + env(safe-area-inset-bottom))}main{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}#toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
 @media(max-width:480px){h1{font-size:1.4rem}.card{padding:13px}.big{font-size:1.7rem}.hrow{grid-template-columns:minmax(0,1fr) 84px}.hrow button{grid-column:1/-1}}
@@ -170,9 +170,9 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
 <div id="splash" class="mu" style="min-height:100vh;display:grid;place-items:center">Loading…</div>
 <div id="auth" hidden><div class="wel">
   <section class="hero">
-    <div class="brandline">◔ Habit Pulse</div>
+    <div class="brandline">🔥 Streak Forge</div>
     <h1 class="serif">Show up a little each day.</h1>
-    <p class="lead">Habit Pulse is your personal study diary. Log the time you give each subject, watch it add up, and keep going, even after a rough week.</p>
+    <p class="lead">Streak Forge is your personal study diary. Log the time you give each subject, watch it add up, and keep going, even after a rough week.</p>
     <ul class="pts">
       <li><i style="--c:var(--cy)">✎</i><span><b>A page for every day</b>Log time with a timer or a quick +10 minutes.</span></li>
       <li><i style="--c:var(--sea)">↺</i><span><b>Progress that stays</b>Missed a day? Nothing is lost. Your history is here when you return.</span></li>
@@ -193,7 +193,7 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
 </div></div>
 <div id="app" hidden>
   <nav aria-label="Main">
-    <div class="brand">Habit Pulse</div>
+    <div class="brand">Streak Forge</div>
     <a href="#dash" data-v="dash">◔ <span>Dashboard</span></a>
     <a href="#habits" data-v="habits">✓ <span>Daily Habits</span></a>
     <a href="#progress" data-v="progress">▦ <span>Progress</span></a>
@@ -216,7 +216,7 @@ import {getDatabase,ref,onValue,update,get,push,query,orderByKey,startAt} from "
 const FIREBASE_CONFIG={apiKey:"AIzaSyAE1xdG_prufAMiBLdkQfwHqJokCjYORUQ",authDomain:"habit-pulse-rg.firebaseapp.com",databaseURL:"https://habit-pulse-rg-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"habit-pulse-rg",appId:"1:592280103446:web:3b74a69899e6f804eb2337"};
 const app=initializeApp(FIREBASE_CONFIG),auth=getAuth(app),db=getDatabase(app);
 
-/* Usernames map to synthetic emails: "name" -> "name@habitpulse.invalid" (.invalid is a reserved TLD, never deliverable).
+/* Usernames map to synthetic emails: "name" -> "name@habitpulse.invalid" (domain kept from the original name so existing accounts keep working) (.invalid is a reserved TLD, never deliverable).
    Firebase enforces unique emails, so usernames are unique. Only Auth stores the password (hashed). */
 const EMAIL=u=>u+'@habitpulse.invalid';
 const AE={'auth/email-already-in-use':'That username is taken.','auth/invalid-credential':'Username or password is incorrect.','auth/user-not-found':'Username or password is incorrect.','auth/wrong-password':'Username or password is incorrect.','auth/weak-password':'Password must be at least 8 characters.','auth/network-request-failed':'Network problem. Check your connection and try again.','auth/operation-not-allowed':'Enable Email/Password sign-in in Firebase Authentication.','auth/too-many-requests':'Too many attempts. Wait a moment and try again.'};
@@ -350,7 +350,7 @@ v_dual:{k:'frame',n:'Double ring',c:100,t:2,r:['v_plain','a_teal'],d:'Two layere
 v_glow:{k:'frame',n:'Glow ring',c:220,t:3,r:['v_dual','r_glow'],d:'Layered rings with a soft glow.'},
 v_spin:{k:'frame',n:'Prism ring',c:450,t:4,r:['v_glow','a_sea'],g:['days',14],d:'A slowly turning colour rim.'},
 v_crown:{k:'frame',n:'Crown',c:900,t:5,r:['v_spin','p_glass'],g:['days',100],d:'A turning rim, a halo and a crown.'},
-b_pulse:{k:'badge\',n:'Pulse',c:30,v:'◉',old:1},b_steady:{k:'badge',n:'Steady',c:50,v:'≈',old:1},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎',old:1},b_back:{k:'badge',n:'Comeback',c:50,v:'↺',old:1}};
+b_pulse:{k:'badge\',n:'Forge',c:30,v:'◉',old:1},b_steady:{k:'badge',n:'Steady',c:50,v:'≈',old:1},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎',old:1},b_back:{k:'badge',n:'Comeback',c:50,v:'↺',old:1}};
 const FAM={f_focus:{n:'Deep Focus',k:'hours',g:'◎',c:'#22d3ee'},f_steady:{n:'Steady',k:'streak',g:'≈',c:'#2fbf8f'},f_days:{n:'Showing Up',k:'days',g:'◉',c:'#a78bfa'},f_chap:{n:'Finisher',k:'chapters',g:'✓',c:'#f59e0b'}};
 const TN=['Spark','Glow','Radiant','Prism','Aurora'];
 const ftier=i=>Math.min(5,MS[FAM[i].k][2].filter(t=>S.rw.ms?.[FAM[i].k+'_'+t]).length);
@@ -384,7 +384,7 @@ function sync(){if(!S.uid||S.dying||syncing||Object.keys(S.got).length<6)return;
   for(const[w,c]of Object.entries(wk))if(c>=5&&!S.rw.weeks?.[w]){u['rewards/weeks/'+w]=Date.now();gain+=20;notes.push('A steady week: 5 study days')}
   const mt=met();for(const[k,[n,un,ts]]of Object.entries(MS))for(const t of ts)if(mt[k]>=t&&!S.rw.ms?.[k+'_'+t]){u[`rewards/ms/${k}_${t}`]=Date.now();notes.push(`Milestone: ${t}${un} ${n.toLowerCase()}`)}
   const nt=tierNow();if(nt>(S.profile.nameTier||0))u['profile/nameTier']=nt;if(!Object.keys(u).length)return;syncing=1;update(ref(db,'users/'+S.uid),u).catch(()=>{}).finally(()=>syncing=0);
-  notes.forEach(x=>toast('✦ '+x));if(gain>0)toast(`+${gain} Pulse Points`)}
+  notes.forEach(x=>toast('✦ '+x));if(gain>0)toast(`+${gain} Forge Points`)}
 V.rewards=()=>{const mt=met(),a=avail(),ms=S.rw.ms||{},un=S.rw.unlocked||{},rec=Object.entries(ms).sort((x,y)=>y[1]-x[1]).slice(0,5);
   const prog=Object.entries(MS).map(([k,[n,u,ts]])=>{const nx=ts.find(t=>!ms[k+'_'+t]),v=mt[k],p=nx?Math.min(100,v/nx*100):100;
     return`<div class="card prg"><div class="row"><b>${n}</b><small>${nx?`${Math.floor(v*10)/10}${u} of ${nx}${u}`:'All reached'}</small></div><div class="bar" role="progressbar" aria-label="${n}" aria-valuenow="${Math.round(p)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div><small>${ts.map(t=>(ms[k+'_'+t]?'✓ ':'')+t+u).join(' · ')}</small></div>`}).join('');
@@ -395,7 +395,7 @@ V.rewards=()=>{const mt=met(),a=avail(),ms=S.rw.ms||{},un=S.rw.unlocked||{},rec=
   const br={accent:'Accent colours',ring:'Progress rings',page:'Diary pages',frame:'Avatar frames'},df={accent:'Bright cyan',ring:'Solid ring',page:'Plain page',frame:'No frame'};
   const tree=Object.keys(br).map(k=>`<section class="card branch"><h3>${br[k]}</h3><div class="node own"><div class="pv">${prev(null,{k})}</div><div class="nb"><b>${df[k]}</b><small>Default</small></div><button data-a="use" data-id="none" data-k="${k}" ${sel(k)?'':'disabled'}>${sel(k)?'Use':'In use'}</button></div>${Object.entries(CAT).filter(([,c])=>c.k===k&&!c.old).sort((x,y)=>x[1].t-y[1].t).map(node).join('')}</section>`).join('');
   return`<h1 class="serif">Rewards</h1><p class="msg">Points come from studying, hitting targets, steady weeks and coming back after a break. They never expire, and a missed day takes nothing away.</p>
-  <div class="g"><div class="card prg"><div class="mu">Available Pulse Points</div><div class="big">${a}</div><small>${earned()} earned in total</small></div><div class="card prg"><div class="mu">How points work</div><small>Time is pooled across all your activities: 1 point per 5 minutes (up to 60 a day). Each category you complete gives 10. A day with every category done and 45+ minutes gives 20. A week with 5 study days gives 20, and returning after a break gives 15. Adding more activities never adds more points.</small></div></div>
+  <div class="g"><div class="card prg"><div class="mu">Available Forge Points</div><div class="big">${a}</div><small>${earned()} earned in total</small></div><div class="card prg"><div class="mu">How points work</div><small>Time is pooled across all your activities: 1 point per 5 minutes (up to 60 a day). Each category you complete gives 10. A day with every category done and 45+ minutes gives 20. A week with 5 study days gives 20, and returning after a break gives 15. Adding more activities never adds more points.</small></div></div>
   <h2 class="serif">Milestones</h2><p class="mu sub">Each one unlocks once and stays yours, even if a streak resets.</p><div class="g">${prog}</div>
   <h2 class="serif">Recent achievements</h2><div class="card">${rec.map(([id,t])=>{const[k,v]=id.split('_');return`<div class="item"><span>✦ ${v}${MS[k][1]} ${MS[k][0].toLowerCase()} <small>${new Date(t).toLocaleDateString()}</small></span></div>`}).join('')||'<p class="mu">Your first milestone is closer than it looks.</p>'}</div>
   <h2 class="serif">Badges</h2><p class="mu sub">They rise from Spark to Aurora as your milestones grow.</p><div class="bgrid">${fams}</div>
@@ -443,7 +443,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   if(a==='avp')return run(()=>W({'profile/avatar':id}));
   if(a==='avx')return run(()=>W({avatar:null,'profile/avatar':'p1'}));
   if(a==='quick')return run(()=>commit([{d:today(),id:push(ref(db)).key,rec:{habitId:id,habitName:S.habits[id].name,seconds:600,startedAt:Date.now(),endedAt:Date.now(),source:'manual'}}]));
-  if(a==='buy')return run(async()=>{const c=CAT[id];if(!c||c.old||S.rw.unlocked?.[id]||lock(c).length)return toast('That reward is still locked.');if(avail()<c.c)return toast('Not enough Pulse Points yet.');await W({['rewards/unlocked/'+id]:Date.now()});toast('✦ Unlocked: '+c.n)});
+  if(a==='buy')return run(async()=>{const c=CAT[id];if(!c||c.old||S.rw.unlocked?.[id]||lock(c).length)return toast('That reward is still locked.');if(avail()<c.c)return toast('Not enough Forge Points yet.');await W({['rewards/unlocked/'+id]:Date.now()});toast('✦ Unlocked: '+c.n)});
   if(a==='use')return run(()=>W({['rewards/sel/'+b.dataset.k]:id==='none'?null:id}));
   if(a==='reset'){if(prompt('This erases all study sessions, chapters and rewards. Your subjects and targets stay. Type RESET to continue.')==='RESET')run(async()=>{if(!S.online)return toast('Connect to the internet first.');await update(ref(db,'users/'+S.uid),{daily:null,sessions:null,chapters:null,rewards:null,'profile/nameTier':null,'profile/showcase':null,'profile/featured':null});setT(null);toast('Progress reset. A fresh start.')});return}
   if(a==='delacct'){$('dlg').innerHTML=`<form data-f="del"><h3>Delete account</h3><p class="mu">This permanently deletes your account and all of its data. It can’t be undone.</p><label>Confirm your password<input name="p" type="password" autocomplete="current-password" required></label><p class="err" id="derr" role="alert"></p><div class="row"><button type="button" data-a="close">Cancel</button><button class="pri">Delete everything</button></div></form>`;return $('dlg').showModal()}
