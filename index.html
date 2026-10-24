@@ -658,7 +658,7 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
     await W({['habits/'+push(ref(db)).key]:{name:n,icon:F.get('i'),color:CC[c],category:c,targetMinutes:m,order:Math.max(-1,...Object.values(S.habits).map(h=>h.order||0))+1}});$('dlg').close();toast('Activity added.')});
   if(k==='ch'){const t=F.get('t').trim();if(!t)return;const id=push(ref(db)).key,h=f.dataset.h;S.open[h]=true;run(()=>W({[`chapters/${h}/${id}`]:{title:t.slice(0,80),status:'todo',updatedAt:Date.now()}}))}
   if(k==='hab'){const hs=Object.values(S.habits),pal=['#5eead4','#22d3ee','#34d399','#38bdf8','#7dd3fc','#2dd4bf'],id=push(ref(db)).key;
-    run(()=>W({['habits/'+id]:{name:F.get('n').trim().slice(0,40),icon:'●',color:pal[hs.length%6],targetMinutes:Math.min(600,Math.max(1,Math.round(+F.get('m')))),order:Math.max(-1,...hs.map(h=>h.order))+1}}))}});
+    run(()=>W({['habits/'+id]:{name:F.get('n').trim().slice(0,40),icon:'●',color:pal[hs.length%6],targetMinutes:Math.min(600,Math.max(1,Math.round(+F.get('m')))),order:Math.max(-1,...hs.map(h=>h.order))+1}}));}
 
   if(k==='addf')run(async()=>{const uname=F.get('u').trim().toLowerCase();
     const toUid=await resolveUsername(uname);
@@ -681,6 +681,7 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
     const gname=(S.groups[gid]||{}).name||gid;
     await WR({[`users/${toUid}/invites/${gid}`]:{name:gname,by:S.uid,byName:dname(),ts:Date.now()},[`groups/${gid}/invites/${toUid}`]:{by:S.uid,ts:Date.now()}});
     $('dlg').close();toast('Invite sent to '+uname)});
+});
 
 window.addEventListener('hashchange',route);
 function route(){const v=location.hash.slice(1);S.view=V[v]?v:'dash';render();if(S.uid)scrollTo(0,0)}
