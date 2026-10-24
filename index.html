@@ -175,6 +175,9 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
 .frow .nm{min-width:0;overflow-wrap:anywhere}.glist{display:grid;gap:var(--s2)}.grow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s3);align-items:center;padding:var(--s3);border:1px solid var(--line);border-radius:12px;background:rgba(9,14,17,.4);cursor:pointer}.grow.sel{border-color:var(--cy);background:rgba(34,211,238,.08)}
 .uname{cursor:pointer;color:var(--cy);text-decoration:underline;text-underline-offset:2px}.uname:hover{opacity:.85}
 
+
+.fsugg{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(9,14,17,.5)}.fsugg.on{display:flex;gap:12px;align-items:center}.fsugg .av{flex:none}.fsugg b{display:block}.fsugg small{color:var(--mu)}
+.fsugg.err{border-color:#fca5a5;color:#fca5a5}.fsugg.ok{border-color:var(--sea)}
 </style>
 </head>
 <body>
@@ -334,7 +337,7 @@ V.progress=()=>{const t=today(),hs=H(),{best}=streaks();let all=0,days=0,bestD=0
   <div class="card"><h3>Time by activity</h3>${hs.map(h=>`<div style="--c:${h.color}"><div class="row"><span>${esc(h.name)}</span><small>${dur(bySub[h.id]||0)}</small></div><div class="bar"><i style="width:${(bySub[h.id]||0)/mx*100}%"></i></div></div>`).join('')}</div></section>
   <div class="card"><h3>Daily minutes, last 30 days</h3>${bars(30)}</div>`};
 V.settings=()=>`<h1>Settings</h1><section class="card"><div class="row"><span><b>${esc(S.profile.username||S.user.email.split('@')[0])}</b><br><small>Signed in</small></span><button data-a="logout">Log out</button></div></section>
-  <h2>Activities and daily targets</h2><div class="card">${CATS.map(c=>`<div class="row"><b style="color:${c.c}">${c.n}</b><button data-a="newact" data-k="${c.id}">+ Add activity</button></div>${H().filter(h=>h.cat===c.id).map(h=>`<div class="hrow"><input data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Activity name"><input data-ht="${h.id}" type="number" min="5" max="600" value="${h.targetMinutes}" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')||'<p class="mu"><small>No activities yet.</small></p>'}`).join('')}<p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing an activity hides it but keeps its history.</small></p></div>
+  <h2>Activities and daily targets</h2><div class="card">${CATS.map(c=>`<div class="row"><b style="color:${c.c}">${c.n}</b><button data-a="newact" data-k="${c.id}">+ Add activity</button></div>${H().filter(h=>h.cat===c.id).map(h=>`<div class="hrow"><input name="hn-${h.id}" id="hn-${h.id}" data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Activity name"><input name="ht-${h.id}" id="ht-${h.id}" data-ht="${h.id}" type="number" min="5" max="600" value="${h.targetMinutes}" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')||'<p class="mu"><small>No activities yet.</small></p>'}`).join('')}<p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing an activity hides it but keeps its history.</small></p></div>
   <h2>Time zone policy</h2><div class="card"><p>Days follow this device’s local time (<b>${Intl.DateTimeFormat().resolvedOptions().timeZone}</b>). Each session stores the local date it was recorded on, so travelling never moves old sessions. A day counts toward your streak at 20 minutes of study. Missing a day never removes past progress.</p></div><h2>Reset and delete</h2><div class="card"><div class="row"><span><b>Reset progress</b><br><small>Erases sessions, chapters and rewards. Subjects and targets stay.</small></span><button data-a="reset">Reset progress</button></div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><div class="row"><span><b>Delete account</b><br><small>Permanently removes your account and all of its data.</small></span><button data-a="delacct">Delete account</button></div></div>`;
 function render(){if(!S.uid)return;look();const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
   m.innerHTML=S.ready?V[S.view]():'Loading…';document.querySelectorAll('.heat').forEach(e=>e.scrollLeft=e.scrollWidth)}
@@ -428,7 +431,7 @@ V.profile=()=>{const pr=S.profile,sc=(pr.showcase||'').split(','),ms=Object.keys
   return`<h1 class="serif">Profile</h1>${plate()}
   <h2 class="serif">Edit profile</h2><form class="card pform" data-f="prof"><label>Display name<input name="n" maxlength="30" required value="${esc(dname())}"></label><label>Bio <small id="bc">${wc(pr.bio||'')}/19 words</small><input id="bio" name="b" maxlength="200" value="${esc(pr.bio||'')}" placeholder="A line about your goals"></label><button class="pri">Save profile</button></form>
   <h2 class="serif">Picture</h2><div class="card"><div class="avs">${PRE.map(p=>`<button data-a="avp" data-id="${p[0]}" aria-label="Avatar ${p[0]}" ${(pr.avatar||'p1')===p[0]?'aria-pressed="true"':''}><span class="av" style="--z:44px">${avInner(p[0])}</span></button>`).join('')}</div><div class="row" style="margin-top:var(--s3)"><label class="up">Upload a photo<input type="file" id="avf" accept="image/png,image/jpeg,image/webp"></label>${pr.avatar==='custom'?'<button data-a="avx">Remove photo</button>':''}</div><small class="mu">Photos are cropped to a small square and stored only in your account.</small></div>
-  <h2 class="serif">Showcase</h2><div class="card"><p class="mu" style="margin:0 0 var(--s3)">Choose up to 3 badges to display on your nameplate.</p><div class="row">${Object.entries(FAM).map(([i,f])=>`<label class="chip"><input type="checkbox" data-sc="${i}" ${sc.includes(i)?'checked':''} ${ftier(i)?'':'disabled'}> ${f.n}</label>`).join('')}</div><label style="margin-top:var(--s3)">Featured achievement<select data-ft><option value="">None</option>${ms.map(i=>`<option value="${i}" ${pr.featured===i?'selected':''}>${esc(msName(i))}</option>`).join('')}</select></label></div>
+  <h2 class="serif">Showcase</h2><div class="card"><p class="mu" style="margin:0 0 var(--s3)">Choose up to 3 badges to display on your nameplate.</p><div class="row">${Object.entries(FAM).map(([i,f])=>`<label class="chip"><input type="checkbox" name="sc-${i}" id="sc-${i}" data-sc="${i}" ${sc.includes(i)?'checked':''} ${ftier(i)?'':'disabled'}> ${f.n}</label>`).join('')}</div><label style="margin-top:var(--s3)">Featured achievement<select name="featured" id="featured" data-ft><option value="">None</option>${ms.map(i=>`<option value="${i}" ${pr.featured===i?'selected':''}>${esc(msName(i))}</option>`).join('')}</select></label></div>
   <p class="mu"><small>Your profile is private unless you join the weekly leaderboard on the Board tab.</small> <a href="#settings" style="color:var(--cy)">Settings</a></p>`};
 function avUp(f){if(!f)return;if(f.size>5e6||!/^image\/(png|jpeg|webp)$/.test(f.type))return toast('Choose a PNG, JPEG or WebP image under 5 MB.');
   const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=128;const m=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,128,128);URL.revokeObjectURL(u);const d=c.toDataURL('image/jpeg',.8);if(d.length>28000)return toast('That image is too detailed. Try another.');run(async()=>{await W({avatar:d,'profile/avatar':'custom'});toast('Photo updated.')})};im.onerror=()=>toast('That image could not be read.');im.src=u}
@@ -450,11 +453,66 @@ function lbPub(){if(S.profile.visibility!=='public'||!S.lbRdy||S.lbBusy)return;c
 const mk=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
 
 /* ===== social helpers ===== */
+
+let suggTimer=null,suggUid=null;
+async function lookupFriendPreview(uname){
+  const box=$('friend-sugg');if(!box)return;
+  uname=(uname||'').trim().toLowerCase();
+  suggUid=null;
+  if(uname.length<3){box.className='fsugg';box.innerHTML='';return}
+  if(!/^[a-z0-9._-]{3,24}$/.test(uname)){box.className='fsugg on err';box.innerHTML='<small>Use 3–24 letters, numbers, . _ -</small>';return}
+  box.className='fsugg on';box.innerHTML='<small class="mu">Looking up…</small>';
+  try{
+    const uid=await resolveUsername(uname);
+    if(!uid){box.className='fsugg on err';box.innerHTML='<small>No account with that username</small>';return}
+    if(uid===S.uid){box.className='fsugg on err';box.innerHTML='<small>That’s you</small>';return}
+    if(S.friends[uid]){box.className='fsugg on';box.innerHTML='<small>Already friends</small>';return}
+    // Load public-ish preview
+    const{w}=lbWk();
+    let stats=null,prof={};
+    try{
+      const [s1,s2]=await Promise.all([
+        get(ref(db,`users/${uid}/weekStats/${w}`)).catch(()=>null),
+        get(ref(db,`users/${uid}/profile`)).catch(()=>null)
+      ]);
+      stats=s1?s1.val():null;prof=(s2&&s2.val())||{};
+    }catch(_){}
+    const name=stats?.n||prof.displayName||prof.username||uname;
+    const a=stats?.a||(/^p[1-8]$/.test(prof.avatar||'')?prof.avatar:'p1');
+    const sc=stats&&typeof stats.s==='number'?stats.s:null;
+    suggUid=uid;
+    box.className='fsugg on ok';
+    box.innerHTML=`<span class="av" style="--z:40px">${avInner(a)}</span><span><b>${esc(name)}</b><small>@${esc(uname)}${sc!=null?' · '+sc+' pts this week':''}</small></span>`;
+  }catch(e){box.className='fsugg on err';box.innerHTML='<small>Lookup failed</small>'}
+}
+document.addEventListener('input',e=>{
+  if(e.target&&e.target.id==='friend-uname'){
+    clearTimeout(suggTimer);
+    suggTimer=setTimeout(()=>lookupFriendPreview(e.target.value),320);
+  }
+});
+
+
+async function ensureUsernameIndex(){
+  if(!S.uid||!S.user)return;
+  try{
+    const uname=(S.profile.username||(S.user.email||'').split('@')[0]||'').toLowerCase();
+    if(!uname||!/^[a-z0-9._-]{3,24}$/.test(uname))return;
+    const snap=await get(ref(db,'usernames/'+uname));
+    if(snap.val()!==S.uid)await update(ref(db),{['usernames/'+uname]:S.uid});
+  }catch(e){/* rules or network */}
+}
+
 async function resolveUsername(uname){
   const u=(uname||'').trim().toLowerCase();
   if(!/^[a-z0-9._-]{3,24}$/.test(u))return null;
-  const s=await get(ref(db,'usernames/'+u));
-  return s.val()||null;
+  try{
+    const s=await get(ref(db,'usernames/'+u));
+    return s.val()||null;
+  }catch(e){
+    console.warn('username lookup failed',e.code||e.message);
+    return null;
+  }
 }
 function pubStats(){if(!S.uid||S.dying)return;const{ws,w}=lbWk(),t=today(),ds=[];
   for(let d=ws;d<=t;d=add(d,1))if(q(d))ds.push(d);const k=ds.length,n=dname().slice(0,30),a=/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1',sc=k*10+(k===7?20:0);
@@ -483,21 +541,27 @@ async function loadGroupLb(gid){
 async function showUserProfile(uid, displayName){
   if(!uid)return;
   const{w}=lbWk();
-  let stats=null, prof=null;
+  let stats=null, prof={};
   try{
-    const [s1,s2]=await Promise.all([
-      get(ref(db,`users/${uid}/weekStats/${w}`)),
-      get(ref(db,`users/${uid}/profile`))
+    const snaps=await Promise.all([
+      get(ref(db,`users/${uid}/weekStats/${w}`)).catch(()=>null),
+      get(ref(db,`users/${uid}/profile`)).catch(()=>null)
     ]);
-    stats=s1.val(); prof=s2.val()||{};
-  }catch(e){toast('Could not load profile');return}
-  const name=displayName||stats?.n||prof.displayName||prof.username||'User';
-  const a=stats?.a||prof.avatar||'p1';
-  const sc=stats?.s??'—';
+    stats=snaps[0]?snaps[0].val():null;
+    prof=(snaps[1]&&snaps[1].val())||{};
+  }catch(e){/* ignore */}
+  const name=displayName||stats?.n||prof.displayName||prof.username||uid.slice(0,8);
+  const a=stats?.a||(/^p[1-8]$/.test(prof.avatar||'')?prof.avatar:'p1');
+  const sc=stats&&typeof stats.s==='number'?stats.s:'—';
   const days=stats?Array.from({length:7},(_,i)=>stats['d'+i]).filter(Boolean).length:0;
+  const isFriend=!!S.friends[uid];
+  const isSelf=uid===S.uid;
   $('dlg').innerHTML=`<div><h3 class="serif" style="margin:0 0 12px">${esc(name)}</h3>
     <div class="row" style="margin-bottom:12px"><span class="av" style="--z:56px">${avInner(a)}</span>
-      <div><div class="big" style="font-size:1.4rem">${sc}</div><small>points this week · ${days} qualifying days</small></div></div>
+      <div><div class="big" style="font-size:1.4rem">${sc}</div><small>points this week · ${days} qualifying day${days===1?'':'s'}</small>
+      ${isFriend?'<div><small class="mu">✓ Friends</small></div>':''}
+      ${isSelf?'<div><small class="mu">This is you</small></div>':''}
+      </div></div>
     <p class="mu" style="margin:0">Only weekly consistency is shared. Detailed study history stays private.</p>
     <div class="row" style="margin-top:16px"><button data-a="close">Close</button></div></div>`;
   $('dlg').showModal();
@@ -541,8 +605,9 @@ V.board=()=>{const{ws}=lbWk(),tab=S.boardTab||'world',pub=S.profile.visibility==
     <p class="msg">Add friends by username. You can see each other’s weekly consistency score.</p>
     <div class="card">
       <h3 style="margin:0 0 10px">Add a friend</h3>
-      <form class="row" data-f="addf"><input name="u" id="friend-uname" placeholder="Username" maxlength="24" required autocomplete="username" style="flex:1"><button class="pri" type="submit">Send request</button></form>
-      <small class="mu">They receive a request they can accept or decline.</small>
+      <form class="row" data-f="addf"><input name="u" id="friend-uname" placeholder="Username" maxlength="24" required autocomplete="username" style="flex:1" aria-autocomplete="list" aria-controls="friend-sugg"><button class="pri" type="submit">Send request</button></form>
+      <div id="friend-sugg" class="fsugg" role="status"></div>
+      <small class="mu">Type a username — a preview appears when found. They receive a request they can accept or decline.</small>
     </div>
     ${inc.length?`<h2 class="serif">Incoming requests</h2><div class="flist">${inc.map(([id,v])=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(v.fromName||id)}">${esc(v.fromName||id)}</b><small>Wants to be friends</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`).join('')}</div>`:''}
     ${out.length?`<h2 class="serif">Outgoing requests</h2><div class="flist">${out.map(id=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b>${esc(id)}</b><small>Pending</small></span><button data-a="cancelf" data-id="${id}">Cancel</button></div>`).join('')}</div>`:''}
@@ -699,13 +764,21 @@ $('af').onsubmit=async e=>{e.preventDefault();const u=$('un').value.trim().toLow
   $('sub').disabled=false};
 const show=w=>{$('splash').hidden=w!=='splash';$('auth').hidden=w!=='auth';$('app').hidden=w!=='app'};
 async function seed(){if(seeding)return;seeding=1;const b='users/'+S.uid;
-  try{if((await get(ref(db,b+'/profile/seeded'))).val())return;
-    const uname=S.user.email.split('@')[0];
-    await update(ref(db),{[b+'/profile']:{username:uname,createdAt:Date.now(),seeded:true,schema:2},['usernames/'+uname]:S.uid})}
-  catch(e){toast('Could not set up your account data ('+(e.code||'error')+'). Reload to retry.');seeding=0}}
+  try{
+    const uname=(S.user.email||'').split('@')[0].toLowerCase();
+    const seeded=(await get(ref(db,b+'/profile/seeded'))).val();
+    const u={};
+    if(!seeded){
+      u[b+'/profile']={username:uname,createdAt:Date.now(),seeded:true,schema:2};
+    }
+    // Always ensure username index exists (helps existing accounts)
+    const existing=await get(ref(db,'usernames/'+uname));
+    if(!existing.val())u['usernames/'+uname]=S.uid;
+    if(Object.keys(u).length)await update(ref(db),u);
+  }catch(e){toast('Could not set up your account data ('+(e.code||'error')+'). Reload to retry.');seeding=0}}
 function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(from?query(ref(db,b+p),orderByKey(),startAt(from)):ref(db,b+p),s=>{fn(s.val()||{});S.got[p]=1;render();sync()},e=>toast('Could not load '+p+' ('+e.code+').')));
   S.win=add(today(),-14);
-  L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed()});L('habits',v=>{S.habits=v;S.ready=1});
+  L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed();else ensureUsernameIndex()});L('habits',v=>{S.habits=v;S.ready=1});
   L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);L('avatar',v=>S.avatar=typeof v==='string'?v:'');
   L('friends',v=>S.friends=v||{});L('incoming',v=>S.incoming=v||{});L('outgoing',v=>S.outgoing=v||{});
   L('groups',v=>S.groups=v||{});L('invites',v=>S.invites=v||{});
