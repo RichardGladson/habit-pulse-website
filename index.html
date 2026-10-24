@@ -108,6 +108,62 @@ nav a[aria-current]{background:linear-gradient(135deg,rgba(34,211,238,.28),rgba(
 @media(max-width:860px){.wel{grid-template-columns:minmax(0,1fr);gap:26px;max-width:460px}.hero{text-align:left}}
 @media(max-width:600px){.pts{display:none}.lead{margin-bottom:0}.hero h1{font-size:1.9rem}}
 @media(max-width:320px){.lead{font-size:.9rem}.hero h1{font-size:1.4rem}.brandline{margin-bottom:6px}}
+/* ===== spacing system + categories ===== */
+:root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px}
+main{display:flex;flex-direction:column;gap:var(--s4)}main>*{margin:0}
+main>h2{margin:var(--s5) 0 calc(-1*var(--s2))}main .g2{margin-top:0}
+.page{display:grid;gap:var(--s4)}.page .note{margin:0}.row-d{margin:0}
+.cat{display:grid;gap:var(--s3)}.cat>.row h3{margin:0;color:var(--cc);display:flex;gap:var(--s2);align-items:baseline;flex-wrap:wrap}.cat>.row button{min-height:34px;padding:4px 12px}
+.start{text-align:left;display:grid;gap:var(--s1);border-top:2px solid var(--cc)!important;cursor:pointer;color:var(--tx)}.start b{color:var(--cc);font-size:1.05rem}.start span{margin-top:var(--s2);color:var(--cy)}
+/* ===== rewards: tiers, badges, tree ===== */
+.pri{background:linear-gradient(135deg,var(--cy),var(--cy2,var(--sea)))}
+html[data-ac=a_aurora] .pri,html[data-ac=a_prism] .pri{background-size:220% 220%;animation:flow2 5s ease infinite}
+html[data-ac=a_prism] h1.serif{background:linear-gradient(90deg,var(--cy),#a78bfa,var(--sea),var(--cy));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:flow3 8s linear infinite}
+@keyframes flow2{50%{background-position:100% 50%}}@keyframes flow3{to{background-position:300% 0}}@keyframes flow{to{background-position:0 0,300% 0}}@keyframes drift{to{background-position:100% 100%}}
+@keyframes spin{to{transform:rotate(1turn)}}@keyframes halo{50%{box-shadow:0 0 0 3px #0f171b,0 0 22px var(--bc)}}@keyframes twk{50%{opacity:.3;transform:scale(.7)}}@keyframes halo2{50%{filter:drop-shadow(0 0 10px var(--cy))}}
+.ring{isolation:isolate}
+.ring.r_dual svg,.ring.r_orbit svg,.ring.r_nova svg{filter:drop-shadow(0 0 4px var(--cy))}.ring.r_dual::after,.ring.r_orbit::after,.ring.r_nova::after{content:'';position:absolute;inset:9%;border-radius:50%;border:1px dashed rgba(47,191,143,.7)}.ring.r_dual .bg,.ring.r_orbit .bg,.ring.r_nova .bg{stroke:rgba(47,191,143,.25)}
+.ring.r_orbit::before,.ring.r_nova::before{content:'';position:absolute;inset:-4px;border-radius:50%;z-index:-1;background:conic-gradient(transparent 70%,var(--cy));-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 3px),#000 calc(100% - 2px));animation:spin 3s linear infinite}
+.ring.r_nova::before{background:conic-gradient(transparent 40%,var(--vi),var(--sea),var(--cy));animation-duration:2.2s}.ring.r_nova{animation:halo2 2.6s ease-in-out infinite}
+.page.p_dots{background-image:radial-gradient(rgba(34,211,238,.16) 1px,transparent 1.5px);background-size:18px 18px}
+.page.p_edge{border:1px solid transparent;background:linear-gradient(var(--card),var(--bg2)) padding-box,linear-gradient(135deg,var(--cy),var(--sea)) border-box}
+.page.p_glass{background:linear-gradient(135deg,rgba(34,211,238,.1),rgba(167,139,250,.08)),var(--card);box-shadow:0 0 0 1px rgba(255,255,255,.06) inset,0 10px 40px -12px var(--cy)}
+.page.p_flow{border:1px solid transparent;background:linear-gradient(var(--card),var(--bg2)) padding-box,linear-gradient(120deg,var(--cy),var(--vi),var(--sea),var(--cy)) border-box;background-size:auto,300% 300%;animation:flow 7s linear infinite}
+.page.p_aurora{background:radial-gradient(500px 220px at 15% 0,rgba(34,211,238,.24),transparent),radial-gradient(500px 240px at 90% 100%,rgba(167,139,250,.22),transparent),radial-gradient(400px 200px at 60% 50%,rgba(47,191,143,.15),transparent),var(--card);background-size:140% 140%;animation:drift 10s ease-in-out infinite alternate;box-shadow:0 12px 50px -14px var(--vi);border:1px solid rgba(167,139,250,.5)}
+.bdg{--bc:#22d3ee;position:relative;width:46px;height:46px;border-radius:50%;display:inline-grid;place-items:center;flex:none;isolation:isolate;vertical-align:middle;margin-left:var(--s2)}.bcard .bdg{margin:0}
+.bdg i{font-style:normal;position:relative;z-index:2;font-size:1.1rem;-webkit-text-fill-color:currentColor}
+.bdg.t0{border:2px dashed var(--line);color:var(--mu);opacity:.6}.bdg.t1{border:2px solid var(--bc);color:var(--bc)}
+.bdg.t2{background:linear-gradient(135deg,var(--bc),color-mix(in srgb,var(--bc) 50%,#000));color:#031a20}
+.bdg.t3,.bdg.t4,.bdg.t5{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.45),transparent 45%),linear-gradient(135deg,var(--bc),color-mix(in srgb,var(--bc) 45%,#000));color:#031a20;box-shadow:0 0 0 3px #0f171b,0 0 0 5px var(--bc),0 0 14px color-mix(in srgb,var(--bc) 55%,transparent)}
+.bdg.t4,.bdg.t5{box-shadow:0 0 0 3px #0f171b}.bdg.t4::before,.bdg.t5::before{content:'';position:absolute;inset:-6px;border-radius:50%;z-index:-1;background:conic-gradient(var(--bc),#fff,var(--vi),var(--sea),var(--bc));animation:spin 4s linear infinite}
+.bdg.t5{animation:halo 2.4s ease-in-out infinite}.bdg.t5::after{content:'✦';position:absolute;top:-9px;right:-5px;color:#fff;font-size:.8rem;animation:twk 1.6s infinite}
+.tree{display:grid;gap:var(--s4);grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));align-items:start}.branch{display:grid;gap:var(--s2)}.branch h3{margin:0 0 var(--s1)}
+.node{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:var(--s3);align-items:center;padding:var(--s3);border:1px solid var(--line);border-radius:12px;background:rgba(9,14,17,.4)}
+.node.own{border-color:rgba(47,191,143,.5)}.node.lk{opacity:.75}.node .pv{display:grid;place-items:center}.node .nb{display:grid;gap:2px;min-width:0}.node b{display:flex;gap:var(--s2);align-items:baseline;flex-wrap:wrap}
+.node em{font-style:normal;font-size:.7rem;color:var(--cy);border:1px solid var(--dc);border-radius:99px;padding:0 6px}.node .rq{color:var(--cy)}.node.lk .rq{color:var(--am)}.node button{min-width:78px;min-height:36px;padding:4px 10px}
+.sw.lg{width:38px;height:38px;margin:0}.ring.mini{width:44px;height:44px;margin:0}.pgp{width:56px;height:40px;padding:0;margin:0;border-radius:8px}
+.bgrid{display:grid;gap:var(--s4);grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr))}.bcard,.prg{display:grid;gap:var(--s2);align-content:start}.bcard .row>span{display:grid}
+main>.sub{margin-bottom:calc(-1*var(--s2))}
+@media(max-width:480px){.node{grid-template-columns:44px minmax(0,1fr)}.node button{grid-column:1/-1}}
+/* ===== profile ===== */
+.av{--z:44px;position:relative;display:inline-grid;place-items:center;width:var(--z);height:var(--z);border-radius:50%;flex:none;isolation:isolate;background:var(--bg2)}
+.av img,.av i{width:100%;height:100%;border-radius:50%;object-fit:cover;font-style:normal;display:grid;place-items:center;color:#031a20;font-weight:700;font-size:calc(var(--z)*.45)}
+.av.v_plain{box-shadow:0 0 0 2px var(--cy)}.av.v_dual{box-shadow:0 0 0 2px #0f171b,0 0 0 4px var(--cy),0 0 0 6px #0f171b,0 0 0 7px var(--sea)}.av.v_glow{box-shadow:0 0 0 2px #0f171b,0 0 0 4px var(--cy),0 0 0 6px #0f171b,0 0 0 7px var(--sea),0 0 20px var(--cy)}
+.av.v_spin,.av.v_crown{box-shadow:0 0 0 3px #0f171b}.av.v_spin::before,.av.v_crown::before{content:'';position:absolute;inset:-6px;border-radius:50%;z-index:-1;background:conic-gradient(var(--cy),var(--vi),var(--sea),var(--cy));animation:spin 4s linear infinite}
+.av.v_crown{animation:halo2 2.6s ease-in-out infinite}.av.v_crown::after{content:'♛';position:absolute;top:calc(var(--z)*-.34);left:50%;transform:translateX(-50%);color:#fde68a;font-size:calc(var(--z)*.32);text-shadow:0 0 8px #f59e0b}
+.plate{position:relative;overflow:hidden;display:grid;gap:var(--s4);padding:var(--s5);border-radius:18px;border:1px solid var(--line);background:linear-gradient(160deg,var(--card),var(--bg2))}
+.ph{display:flex;gap:var(--s4);align-items:center;flex-wrap:wrap}.pb{flex:1 1 200px;min-width:0}.pb h2{margin:0}.pb p{margin:var(--s2) 0 0;opacity:.88}.nt{color:var(--cy)}
+.sc{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}.sc .bdg{margin:0}.feat{border:1px solid var(--dc);border-radius:99px;padding:4px 12px;color:var(--cy);font-size:.85rem}
+.plate.n2{border-color:transparent;background:linear-gradient(var(--card),var(--bg2)) padding-box,linear-gradient(135deg,var(--cy),var(--sea)) border-box}
+.plate.n3{border-color:transparent;background:radial-gradient(400px 160px at 0 0,rgba(34,211,238,.18),transparent),radial-gradient(400px 160px at 100% 100%,rgba(167,139,250,.16),transparent),linear-gradient(var(--card),var(--bg2)) padding-box,linear-gradient(135deg,var(--cy),var(--vi),var(--sea)) border-box;box-shadow:0 10px 36px -14px var(--cy)}
+.plate.n4{border-color:transparent;background:radial-gradient(400px 160px at 0 0,rgba(34,211,238,.2),transparent),linear-gradient(var(--card),var(--bg2)) padding-box,linear-gradient(120deg,var(--cy),var(--vi),var(--sea),var(--cy)) border-box;background-size:auto,auto,300% 300%;animation:flow4 7s linear infinite;box-shadow:0 12px 44px -12px var(--vi)}
+.plate.n4::after,.plate.n5::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.1) 50%,transparent 60%);transform:translateX(-100%);animation:sweep 5s ease-in-out infinite;pointer-events:none}
+.plate.n5{border-color:rgba(167,139,250,.6);background:radial-gradient(500px 220px at 10% 0,rgba(34,211,238,.28),transparent),radial-gradient(500px 240px at 95% 100%,rgba(167,139,250,.26),transparent),radial-gradient(400px 200px at 55% 50%,rgba(47,191,143,.18),transparent),var(--card);background-size:140% 140%;animation:drift 9s ease-in-out infinite alternate;box-shadow:0 16px 60px -12px var(--vi),0 0 0 1px rgba(255,255,255,.06) inset}
+.plate.n5::before{content:'✦ ✧ ✦';position:absolute;top:10px;right:16px;color:#fff;letter-spacing:8px;opacity:.7;animation:twk 2.4s infinite}
+@keyframes flow4{to{background-position:0 0,0 0,300% 0}}@keyframes sweep{60%,100%{transform:translateX(100%)}}
+.avs{display:flex;flex-wrap:wrap;gap:var(--s3)}.avs button{padding:4px;border-radius:50%;min-height:0;line-height:0}.avs [aria-pressed=true]{border-color:var(--cy);box-shadow:0 0 0 2px var(--cy)}
+.chip{display:inline-flex;gap:var(--s2);align-items:center;margin:0;color:var(--tx)}.chip input{width:auto;min-height:0}.up input{margin-top:var(--s2)}.pform{display:grid;gap:var(--s2);max-width:560px}.pform label{margin:0}
+@media(max-width:720px){nav a[data-v=settings]{display:none}}
 </style>
 </head>
 <body>
@@ -142,6 +198,7 @@ nav a[aria-current]{background:linear-gradient(135deg,rgba(34,211,238,.28),rgba(
     <a href="#habits" data-v="habits">✓ <span>Daily Habits</span></a>
     <a href="#progress" data-v="progress">▦ <span>Progress</span></a>
     <a href="#rewards" data-v="rewards">✦ <span>Rewards</span></a>
+    <a href="#profile" data-v="profile">☺ <span>Profile</span></a>
     <a href="#settings" data-v="settings">⚙ <span>Settings</span></a>
     <div class="sp"></div><small><i id="dot"></i><span id="dtx">connecting</span></small>
   </nav>
@@ -163,8 +220,7 @@ const app=initializeApp(FIREBASE_CONFIG),auth=getAuth(app),db=getDatabase(app);
    Firebase enforces unique emails, so usernames are unique. Only Auth stores the password (hashed). */
 const EMAIL=u=>u+'@habitpulse.invalid';
 const AE={'auth/email-already-in-use':'That username is taken.','auth/invalid-credential':'Username or password is incorrect.','auth/user-not-found':'Username or password is incorrect.','auth/wrong-password':'Username or password is incorrect.','auth/weak-password':'Password must be at least 8 characters.','auth/network-request-failed':'Network problem. Check your connection and try again.','auth/operation-not-allowed':'Enable Email/Password sign-in in Firebase Authentication.','auth/too-many-requests':'Too many attempts. Wait a moment and try again.'};
-const D=[['hindi','Hindi','अ','#f59e0b',20],['math','Mathematics','∑','#22d3ee',60],['science','Science','⚛','#34d399',60],['social','Social Studies','◍','#a78bfa',30],['english','English','Aa','#f472b6',10]];
-const VC={hindi:'#f59e0b',math:'#22d3ee',science:'#34d399',social:'#a78bfa',english:'#f472b6'};
+const CATS=[{id:'mind',n:'Mind',sub:'Studies and learning',c:'#22d3ee'},{id:'body',n:'Body',sub:'Workouts and movement',c:'#2fbf8f'},{id:'craft',n:'Craft',sub:'Skills and hobbies',c:'#a78bfa'}],CC=Object.fromEntries(CATS.map(c=>[c.id,c.c])),ICONS=['✎','∑','⚛','♪','♥','⚡','✦','◈','☀','⚑','❖','✿'];
 const QUAL=1200,ST={todo:'Not started',doing:'In progress',done:'Completed'};
 
 /* ===== utils: all dates are LOCAL dates (YYYY-MM-DD) ===== */
@@ -180,7 +236,7 @@ function toast(t){const e=document.createElement('div');e.textContent=t;$('toast
 /* ===== state & data ===== */
 const S={uid:null,user:null,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,ready:0,view:'dash',online:false,open:{},win:''};
 let unsubs=[],busy=0,mode='in',seeding=0;
-const H=()=>Object.entries(S.habits).filter(([,h])=>!h.archived).map(([id,h])=>({id,...h,color:VC[id]||h.color})).sort((a,b)=>a.order-b.order);
+const H=()=>Object.entries(S.habits).filter(([,h])=>!h.archived).map(([id,h])=>{const cat=CC[h.category]?h.category:'mind';return{id,...h,cat,color:CC[cat]}}).sort((a,b)=>a.order-b.order);
 const sec=(h,d)=>S.daily[d]?.bySubject?.[h.id]||0;
 const tgt=(h,d)=>d===today()?h.targetMinutes:(S.daily[d]?.targets?.[h.id]??h.targetMinutes);
 const hp=(h,d)=>Math.min(100,Math.floor(sec(h,d)/(tgt(h,d)*60)*100));
@@ -228,6 +284,8 @@ function msg(){const t=today(),s=tot(t),m=Math.floor(s/60),keys=Object.keys(S.da
   if(s>0)return`${m} minutes in. ${Math.ceil((QUAL-s)/60)} more makes today count toward your streak.`;
   const last=keys[keys.length-1];if(num(t)-num(last)>1){const all=Object.values(S.daily).reduce((a,d)=>a+d.seconds,0);return`Welcome back. Your ${dur(all)} of study is still here. One short session picks things up.`}
   return'A short session is enough to get started today.'}
+const byCat=(fn,g)=>CATS.map(c=>{const l=H().filter(h=>h.cat===c.id);return l.length?`<section class="cat" style="--cc:${c.c}"><div class="row"><h3>${c.n} <small>${c.sub}</small></h3><button data-a="newact" data-k="${c.id}">+ Add</button></div>${g?`<div class="g">${l.map(fn).join('')}</div>`:l.map(fn).join('')}</section>`:''}).join('');
+const startCards=()=>`<div class="g">${CATS.map(c=>`<button class="card start" style="--cc:${c.c}" data-a="newact" data-k="${c.id}"><b>${c.n}</b><small>${c.sub}</small><span>+ Add your first activity</span></button>`).join('')}</div>`;
 const timerBar=()=>{const t=getT();if(!t)return'';const h=S.habits[t.id];
   return`<div class="card tb"><b>${esc(h?.name||'Session')}</b><span id="tclock" class="clk">${clk(el(t))}</span>${t.run?'<button data-a="pause">Pause</button>':'<button data-a="resume">Resume</button>'}<button class="pri" data-a="finish">Finish and save</button><button data-a="discard">Discard</button>${t.int?'<small style="width:100%">Interrupted. Only time up to the last check-in was kept.</small>':''}</div>`};
 const card=h=>{const t=today(),p=hp(h,t),m=Math.floor(sec(h,t)/60),dn=p>=100;
@@ -241,70 +299,128 @@ function recent(n,ctl){const l=[];for(const[d,m]of Object.entries(S.sessions))fo
   return l.slice(0,n).map(r=>`<div class="item"><span>${esc(r.habitName)} <small>${r.d} · ${dur(r.seconds)}${r.notes?' · '+esc(r.notes):''}</small></span>${ctl?`<button data-a="edit" data-d="${r.d}" data-id="${r.id}">Edit</button><button data-a="del" data-d="${r.d}" data-id="${r.id}">Delete</button>`:''}</div>`).join('')}
 V.dash=()=>{const t=today(),o=overall(t),{cur,best}=streaks(),c=cons(),jd=joinKey(),hs=H(),dots=[];
   for(let i=29;i>=0;i--){const d=add(t,-i);if(d>=jd)dots.push(`<i class="${q(d)?'q':''}" title="${d}"></i>`)}
-  const done=hs.filter(h=>hp(h,t)>=100).length,b=sel('badge')?CAT[sel('badge')].v:'';
+  const done=hs.filter(h=>hp(h,t)>=100).length,b=bdg(sel('badge'),34);
   return`<p class="mu" style="margin:0">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'})}</p><h1 class="serif">${greet()} ${b}</h1>${timerBar()}
-  <section class="card page"><div class="row"><div><h2 class="serif" style="margin:0">Today’s page</h2><small>${done} of ${hs.length} subjects done · ${dur(tot(t))} studied</small></div><div class="ring sm ${sel('ring')}" role="progressbar" aria-label="Overall progress today" aria-valuenow="${o.pct}" aria-valuemin="0" aria-valuemax="100"><svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="56"/><circle class="fg ${o.pct>=100?'ok':''}" cx="70" cy="70" r="56" stroke-dasharray="${o.pct*3.5186} 352"/></svg><b>${o.pct}%</b></div></div>
-  <p class="note">${msg()}</p>${hs.map(card).join('')||'<p class="mu">Add a subject in Settings to start your first page.</p>'}</section>
+  <section class="card page ${sel('page')}"><div class="row"><div><h2 class="serif" style="margin:0">Today’s page</h2><small>${done} of ${hs.length} activities done · ${dur(tot(t))} studied</small></div><div class="ring sm ${sel('ring')}" role="progressbar" aria-label="Overall progress today" aria-valuenow="${o.pct}" aria-valuemin="0" aria-valuemax="100"><svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="56"/><circle class="fg ${o.pct>=100?'ok':''}" cx="70" cy="70" r="56" stroke-dasharray="${o.pct*3.5186} 352"/></svg><b>${o.pct}%</b></div></div>
+  <p class="note">${msg()}</p>${hs.length?byCat(card):'<p class="note">Your diary is ready. Choose where to start. You can add more any time.</p>'+startCards()}</section>
   <h2 class="serif">A glance back</h2><div class="g"><div class="card"><div class="mu">Current streak</div><div class="big">${cur} ${cur===1?'day':'days'}</div><small>Longest ${best}. Your history stays even when a streak resets.</small></div><div class="card"><div class="mu">Since you joined (up to 30 days)</div><div class="big">${c.pct}%</div><small>${c.n} of ${c.den} days counted</small><div class="dots" role="img" aria-label="${c.n} qualifying days">${dots.join('')}</div></div></div>
   <div class="g2"><div class="card"><h3>Last 7 days</h3>${bars(7)}</div><div class="card"><h3>Recent entries</h3>${recent(5,false)}</div></div>`};
 const chap=h=>{const cs=Object.entries(S.chapters[h.id]||{}),dn=cs.filter(([,c])=>c.status==='done').length;
   return`<details class="card" data-o="${h.id}" ${S.open[h.id]?'open':''}><summary>${esc(h.icon)} ${esc(h.name)} <small>· ${dn}/${cs.length} chapters completed</small></summary>
   ${cs.map(([id,c])=>`<div class="row ch"><span>${esc(c.title)}</span><select data-ch="${h.id}|${id}" aria-label="Status of ${esc(c.title)}">${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${c.status===k?'selected':''}>${v}</option>`).join('')}</select><button data-a="chren" data-k="${h.id}|${id}" aria-label="Rename">✎</button><button data-a="chdel" data-k="${h.id}|${id}" aria-label="Remove">✕</button></div>`).join('')||'<p class="mu">No chapters yet. Add the first one below.</p>'}
   <form data-f="ch" data-h="${h.id}" class="row"><input name="t" placeholder="Add a chapter" maxlength="80" required aria-label="Chapter name"><button class="pri">Add</button></form></details>`};
-V.habits=()=>`<h1>Daily habits</h1>${timerBar()}<div class="g" style="margin-top:14px">${H().map(card).join('')}</div>
-  <h2>Session log</h2><div class="card">${recent(30,true)}</div><h2>Chapters</h2><div class="g">${H().map(chap).join('')}</div>`;
+V.habits=()=>`<h1>Daily habits</h1>${timerBar()}${H().length?byCat(card):startCards()}
+  <h2>Session log</h2><div class="card">${recent(30,true)}</div><h2>Chapters</h2>${byCat(chap,1)}`;
 V.progress=()=>{const t=today(),hs=H(),{best}=streaks();let all=0,days=0,bestD=0;const bySub={};
   for(const[d,v]of Object.entries(S.daily)){all+=v.seconds;days++;bestD=Math.max(bestD,v.seconds);for(const[k,s]of Object.entries(v.bySubject||{}))bySub[k]=(bySub[k]||0)+s}
   const cells=[],dow=(new Date().getDay()+6)%7,jd=joinKey(),start=jd>add(t,-(25*7+dow))?jd:add(t,-(25*7+dow));for(let k=(new Date(start+'T00:00').getDay()+6)%7;k>0;k--)cells.push('<i style="visibility:hidden"></i>');
   for(let i=0;add(start,i)<=t;i++){const d=add(start,i),m=Math.floor(tot(d)/60),l=m>=120?4:m>=60?3:m>=20?2:m>0?1:0;cells.push(`<i class="${l?'l'+l:''}" role="img" aria-label="${d}: ${m} minutes" title="${d}: ${m} min"></i>`)}
   let chd=0,cht=0;for(const m of Object.values(S.chapters))for(const c of Object.values(m)){cht++;if(c.status==='done')chd++}
   const mx=Math.max(...Object.values(bySub),1);
-  return`<h1>Progress</h1><div class="card" style="margin-top:14px"><h3>Activity since you joined</h3><div class="heat">${cells.join('')}</div><small>Darker to green = more minutes (1–19, 20–59, 60–119, 120+). Weeks start on Monday.</small></div>
+  return`<h1>Progress</h1><div class="card"><h3>Activity since you joined</h3><div class="heat">${cells.join('')}</div><small>Darker to green = more minutes (1–19, 20–59, 60–119, 120+). Weeks start on Monday.</small></div>
   <section class="g2"><div class="card"><h3>Totals (last 13 months)</h3><div class="item"><span>Total study time</span><b>${dur(all)}</b></div><div class="item"><span>Days with study</span><b>${days}</b></div><div class="item"><span>Longest streak</span><b>${best} days</b></div><div class="item"><span>Best single day</span><b>${dur(bestD)}</b></div><div class="item"><span>Chapters completed</span><b>${chd} of ${cht}</b></div></div>
-  <div class="card"><h3>Time by subject</h3>${hs.map(h=>`<div style="--c:${h.color}"><div class="row"><span>${esc(h.name)}</span><small>${dur(bySub[h.id]||0)}</small></div><div class="bar"><i style="width:${(bySub[h.id]||0)/mx*100}%"></i></div></div>`).join('')}</div></section>
-  <div class="card" style="margin-top:14px"><h3>Daily minutes, last 30 days</h3>${bars(30)}</div>`};
-V.settings=()=>`<h1>Settings</h1><section class="card" style="margin-top:14px"><div class="row"><span><b>${esc(S.profile.username||S.user.email.split('@')[0])}</b><br><small>Signed in</small></span><button data-a="logout">Log out</button></div></section>
-  <h2>Subjects and daily targets</h2><div class="card">${H().map(h=>`<div class="hrow"><input data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Subject name"><input data-ht="${h.id}" type="number" min="1" max="600" value="${h.targetMinutes}" style="width:90px" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')}
-  <form data-f="hab" class="hrow"><input name="n" placeholder="New subject" maxlength="40" required aria-label="New subject name"><input name="m" type="number" min="1" max="600" value="30" style="width:90px" aria-label="Target minutes"><button class="pri">Add</button></form>
-  <p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing a subject hides it but keeps its history.</small></p></div>
+  <div class="card"><h3>Time by activity</h3>${hs.map(h=>`<div style="--c:${h.color}"><div class="row"><span>${esc(h.name)}</span><small>${dur(bySub[h.id]||0)}</small></div><div class="bar"><i style="width:${(bySub[h.id]||0)/mx*100}%"></i></div></div>`).join('')}</div></section>
+  <div class="card"><h3>Daily minutes, last 30 days</h3>${bars(30)}</div>`};
+V.settings=()=>`<h1>Settings</h1><section class="card"><div class="row"><span><b>${esc(S.profile.username||S.user.email.split('@')[0])}</b><br><small>Signed in</small></span><button data-a="logout">Log out</button></div></section>
+  <h2>Activities and daily targets</h2><div class="card">${CATS.map(c=>`<div class="row"><b style="color:${c.c}">${c.n}</b><button data-a="newact" data-k="${c.id}">+ Add activity</button></div>${H().filter(h=>h.cat===c.id).map(h=>`<div class="hrow"><input data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Activity name"><input data-ht="${h.id}" type="number" min="5" max="600" value="${h.targetMinutes}" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')||'<p class="mu"><small>No activities yet.</small></p>'}`).join('')}<p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing an activity hides it but keeps its history.</small></p></div>
   <h2>Time zone policy</h2><div class="card"><p>Days follow this device’s local time (<b>${Intl.DateTimeFormat().resolvedOptions().timeZone}</b>). Each session stores the local date it was recorded on, so travelling never moves old sessions. A day counts toward your streak at 20 minutes of study. Missing a day never removes past progress.</p></div><h2>Reset and delete</h2><div class="card"><div class="row"><span><b>Reset progress</b><br><small>Erases sessions, chapters and rewards. Subjects and targets stay.</small></span><button data-a="reset">Reset progress</button></div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><div class="row"><span><b>Delete account</b><br><small>Permanently removes your account and all of its data.</small></span><button data-a="delacct">Delete account</button></div></div>`;
 function render(){if(!S.uid)return;look();const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
   m.innerHTML=S.ready?V[S.view]():'Loading…';document.querySelectorAll('.heat').forEach(e=>e.scrollLeft=e.scrollWidth)}
 
 /* ===== rewards: derived from your data and written once (ratchet), so edits, deletes and retries never double-award ===== */
 const joinKey=()=>key(new Date(S.profile.createdAt||Date.now()));
-const CAT={a_teal:{k:'accent',n:'Teal',c:40,v:'#2dd4bf'},a_sky:{k:'accent',n:'Sky',c:60,v:'#38bdf8'},a_sea:{k:'accent',n:'Sea green',c:80,v:'#2fbf8f'},r_seg:{k:'ring',n:'Segmented ring',c:60},r_glow:{k:'ring',n:'Glow ring',c:90},b_pulse:{k:'badge',n:'Pulse',c:30,v:'◉'},b_steady:{k:'badge',n:'Steady',c:50,v:'≈'},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎'},b_back:{k:'badge',n:'Comeback',c:50,v:'↺'}};
+const CAT={
+a_teal:{k:'accent',n:'Teal',c:40,v:'#2dd4bf',w:'#2fbf8f',t:1,d:'A calm teal accent.'},
+a_sky:{k:'accent',n:'Sky',c:60,v:'#38bdf8',w:'#2dd4bf',t:2,r:['a_teal'],d:'Bright blue-cyan with a teal gradient.'},
+a_sea:{k:'accent',n:'Sea green',c:80,v:'#2fbf8f',w:'#22d3ee',t:3,r:['a_sky'],d:'Deep sea green fading to cyan.'},
+a_aurora:{k:'accent',n:'Aurora',c:450,v:'#5eead4',w:'#a78bfa',t:4,r:['a_sea','r_glow'],g:['streak',14],d:'Buttons flow between mint and violet.'},
+a_prism:{k:'accent',n:'Prism',c:900,v:'#67e8f9',w:'#f472b6',t:5,r:['a_aurora','p_glass'],g:['days',60],d:'Animated gradient headline and buttons.'},
+r_seg:{k:'ring',n:'Segmented',c:60,t:1,d:'A dashed track behind your progress.'},
+r_glow:{k:'ring',n:'Glow',c:90,t:2,r:['r_seg'],d:'A soft glow on your progress.'},
+r_dual:{k:'ring',n:'Dual',c:220,t:3,r:['r_glow','a_sky'],d:'A layered inner ring with a green track.'},
+r_orbit:{k:'ring',n:'Orbit',c:450,t:4,r:['r_dual','a_sea'],g:['hours',25],d:'A light that circles your ring.'},
+r_nova:{k:'ring',n:'Nova',c:900,t:5,r:['r_orbit','a_aurora'],g:['streak',30],d:'A pulsing, multicolour orbit.'},
+p_dots:{k:'page',n:'Dot grid',c:40,t:1,d:'A quiet dotted page.'},
+p_edge:{k:'page',n:'Gradient edge',c:100,t:2,r:['p_dots'],d:'A cyan-to-green frame.'},
+p_glass:{k:'page',n:'Glass',c:220,t:3,r:['p_edge','r_seg'],d:'Frosted layers with a soft glow.'},
+p_flow:{k:'page',n:'Flowing edge',c:450,t:4,r:['p_glass','a_sea'],g:['days',30],d:'A border of slowly moving colour.'},
+p_aurora:{k:'page',n:'Aurora page',c:900,t:5,r:['p_flow','r_orbit'],g:['hours',50],d:'A drifting aurora behind your day.'},
+v_plain:{k:'frame',n:'Simple ring',c:40,t:1,d:'A clean cyan ring.'},
+v_dual:{k:'frame',n:'Double ring',c:100,t:2,r:['v_plain','a_teal'],d:'Two layered rings.'},
+v_glow:{k:'frame',n:'Glow ring',c:220,t:3,r:['v_dual','r_glow'],d:'Layered rings with a soft glow.'},
+v_spin:{k:'frame',n:'Prism ring',c:450,t:4,r:['v_glow','a_sea'],g:['days',14],d:'A slowly turning colour rim.'},
+v_crown:{k:'frame',n:'Crown',c:900,t:5,r:['v_spin','p_glass'],g:['days',100],d:'A turning rim, a halo and a crown.'},
+b_pulse:{k:'badge\',n:'Pulse',c:30,v:'◉',old:1},b_steady:{k:'badge',n:'Steady',c:50,v:'≈',old:1},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎',old:1},b_back:{k:'badge',n:'Comeback',c:50,v:'↺',old:1}};
+const FAM={f_focus:{n:'Deep Focus',k:'hours',g:'◎',c:'#22d3ee'},f_steady:{n:'Steady',k:'streak',g:'≈',c:'#2fbf8f'},f_days:{n:'Showing Up',k:'days',g:'◉',c:'#a78bfa'},f_chap:{n:'Finisher',k:'chapters',g:'✓',c:'#f59e0b'}};
+const TN=['Spark','Glow','Radiant','Prism','Aurora'];
+const ftier=i=>Math.min(5,MS[FAM[i].k][2].filter(t=>S.rw.ms?.[FAM[i].k+'_'+t]).length);
+const bdg=(i,z)=>{if(!i)return'';if(FAM[i]){const t=ftier(i);return`<span class="bdg t${t}" style="--bc:${FAM[i].c}${z?`;width:${z}px;height:${z}px`:''}" title="${FAM[i].n} · ${t?TN[t-1]:'Locked'}"><i>${FAM[i].g}</i></span>`}return CAT[i]?CAT[i].v:''};
+const lock=c=>{const m=[];for(const r of c.r||[])if(!S.rw.unlocked?.[r])m.push(CAT[r].n);if(c.g&&!S.rw.ms?.[c.g[0]+'_'+c.g[1]])m.push(`${c.g[1]}${MS[c.g[0]][1]} ${MS[c.g[0]][0].toLowerCase()} milestone`);return m};
+const prev=(i,c)=>c.k==='accent'?`<i class="sw lg" style="background:linear-gradient(135deg,${c.v||'#22d3ee'},${c.w||'#2fbf8f'})"></i>`:c.k==='ring'?`<div class="ring mini ${i||''}"><svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="56"/><circle class="fg" cx="70" cy="70" r="56" stroke-dasharray="230 352"/></svg></div>`:c.k==='page'?`<div class="card page pgp ${i||''}"></div>`:`<span class="av ${i||''}" style="--z:44px"><i style="background:linear-gradient(135deg,#22d3ee,#2fbf8f)">◔</i></span>`;
 const MS={hours:['Study hours','h',[5,10,25,50,100]],chapters:['Chapters completed','',[1,5,10,25]],days:['Qualifying days','',[3,7,14,30,60,100]],streak:['Day streak','',[3,7,14,30,60]]};
-const sel=k=>{const i=S.rw.sel?.[k];return i&&S.rw.unlocked?.[i]?i:''};
-function look(){document.documentElement.style.setProperty('--cy',sel('accent')?CAT[sel('accent')].v:'#22d3ee')}
-function met(){let s=0,d=0,c=0;for(const v of Object.values(S.daily)){s+=v.seconds;if(v.seconds>=QUAL)d++}
-  for(const m of Object.values(S.chapters))for(const x of Object.values(m))if(x.status==='done')c++;return{hours:s/3600,chapters:c,days:d,streak:streaks().best}}
-function earned(){let p=0;for(const r of Object.values(S.rw.days||{}))p+=(r.m||0)+10*Object.keys(r.s||{}).length+25*(r.a||0);return p+20*Object.keys(S.rw.weeks||{}).length+15*Object.keys(S.rw.back||{}).length}
+const sel=k=>{const i=S.rw.sel?.[k];return i&&(S.rw.unlocked?.[i]||(FAM[i]&&ftier(i)>0))?i:''};
+function look(){const a=sel('accent'),c=a?CAT[a]:null,h=document.documentElement;h.style.setProperty('--cy',c?.v||'#22d3ee');h.style.setProperty('--cy2',c?.w||'#2fbf8f');h.dataset.ac=a}
+function met(){let s=0,d=0,c=0;const cd={};for(const v of Object.values(S.daily)){s+=v.seconds;if(v.seconds>=QUAL)d++}
+  for(const o of Object.values(S.chapters))for(const[ci,x]of Object.entries(o))if(x.status==='done'){const k=x.completedAt?key(new Date(x.completedAt)):'L'+ci;cd[k]=(cd[k]||0)+1}
+  for(const n of Object.values(cd))c+=Math.min(n,3);return{hours:s/3600,chapters:c,days:d,streak:streaks().best}}
+const dpts=(o,n)=>Math.max(o?(o.m||0)+10*Object.keys(o.s||{}).length+25*(o.a||0):0,n?(n.m||0)+10*Object.keys(n.c||{}).length+20*(n.a||0):0);
+function earned(){const o=S.rw.days||{},n=S.rw.d2||{},cut=S.rw.cutover||'0';let p=0;
+  for(const d of new Set([...Object.keys(o),...Object.keys(n)]))p+=d<cut?dpts(o[d],null):dpts(o[d],n[d]);
+  return p+20*Object.keys(S.rw.weeks||{}).length+15*Object.keys(S.rw.back||{}).length}
 const avail=()=>earned()-Object.keys(S.rw.unlocked||{}).reduce((a,i)=>a+(CAT[i]?.c||0),0);
 let syncing=0;
 function sync(){if(!S.uid||S.dying||syncing||Object.keys(S.got).length<6)return;const u={},hs=H(),notes=[];let gain=0;
-  for(const[d,v]of Object.entries(S.daily)){const old=(S.rw.days||{})[d]||{},s={...(old.s||{})};let a=old.a||0,n=0;
+  if(!S.rw.cutover){u['rewards/cutover']=today();u['profile/schema']=2}
+  const cut=S.rw.cutover||today(),cats=CATS.filter(c=>hs.some(h=>h.cat===c.id));
+  for(const[d,v]of Object.entries(S.daily)){if(d<cut)continue;const old=(S.rw.d2||{})[d]||{},c={...(old.c||{})};let a=old.a||0,n=0;
     const m=Math.max(old.m||0,Math.min(60,Math.floor(v.seconds/300)));
-    for(const h of hs)if((v.bySubject?.[h.id]||0)>=(d===today()?h.targetMinutes:(v.targets?.[h.id]??h.targetMinutes))*60&&!s[h.id]){s[h.id]=true;n++}
-    if(!a&&hs.length&&hs.every(h=>s[h.id])){a=1;gain+=25;notes.push('Every target done in one day')}
-    gain+=m-(old.m||0)+10*n;if(m!==(old.m||0)||n||a!==(old.a||0))u['rewards/days/'+d]={m,s,a}}
+    for(const k of cats){let pm=0,g=0;for(const[id,h]of Object.entries(S.habits)){if((h.category||'mind')!==k.id)continue;pm+=v.bySubject?.[id]||0;if(!h.archived)g+=d===today()?h.targetMinutes:(v.targets?.[id]??h.targetMinutes)}
+      if(!c[k.id]&&pm>=Math.min(120,Math.max(20,g))*60){c[k.id]=true;n++}}
+    if(!a&&cats.length&&cats.every(k=>c[k.id])&&v.seconds>=2700){a=1;gain+=20;notes.push('Every category done in one day')}
+    gain+=m-(old.m||0)+10*n;if(m!==(old.m||0)||n||a!==(old.a||0))u['rewards/d2/'+d]={m,c,a}}
   const ds=Object.keys(S.daily).filter(q).sort(),wk={};
   ds.forEach((d,i)=>{const w=add(d,-((new Date(d+'T00:00').getDay()+6)%7));wk[w]=(wk[w]||0)+1;
     if(i&&num(d)-num(ds[i-1])>=3&&!S.rw.back?.[d]){u['rewards/back/'+d]=Date.now();gain+=15;notes.push('Welcome back. Your progress was waiting for you')}});
   for(const[w,c]of Object.entries(wk))if(c>=5&&!S.rw.weeks?.[w]){u['rewards/weeks/'+w]=Date.now();gain+=20;notes.push('A steady week: 5 study days')}
   const mt=met();for(const[k,[n,un,ts]]of Object.entries(MS))for(const t of ts)if(mt[k]>=t&&!S.rw.ms?.[k+'_'+t]){u[`rewards/ms/${k}_${t}`]=Date.now();notes.push(`Milestone: ${t}${un} ${n.toLowerCase()}`)}
-  if(!Object.keys(u).length)return;syncing=1;update(ref(db,'users/'+S.uid),u).catch(()=>{}).finally(()=>syncing=0);
+  const nt=tierNow();if(nt>(S.profile.nameTier||0))u['profile/nameTier']=nt;if(!Object.keys(u).length)return;syncing=1;update(ref(db,'users/'+S.uid),u).catch(()=>{}).finally(()=>syncing=0);
   notes.forEach(x=>toast('✦ '+x));if(gain>0)toast(`+${gain} Pulse Points`)}
 V.rewards=()=>{const mt=met(),a=avail(),ms=S.rw.ms||{},un=S.rw.unlocked||{},rec=Object.entries(ms).sort((x,y)=>y[1]-x[1]).slice(0,5);
   const prog=Object.entries(MS).map(([k,[n,u,ts]])=>{const nx=ts.find(t=>!ms[k+'_'+t]),v=mt[k],p=nx?Math.min(100,v/nx*100):100;
-    return`<div class="card"><div class="row"><b>${n}</b><small>${nx?`${Math.floor(v*10)/10}${u} of ${nx}${u}`:'All reached'}</small></div><div class="bar" role="progressbar" aria-label="${n}" aria-valuenow="${Math.round(p)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div><small>${ts.map(t=>(ms[k+'_'+t]?'✓ ':'')+t+u).join(' · ')}</small></div>`}).join('');
-  const item=([i,c])=>{const own=un[i],on=sel(c.k)===i;return`<div class="item"><span>${c.k==='accent'?`<i class="sw" style="background:${c.v}"></i>`:c.k==='badge'?c.v+' ':''}${c.n} <small>${own?'Unlocked':c.c+' points'}</small></span>${own?`<button data-a="use" data-id="${i}" data-k="${c.k}" ${on?'disabled':''}>${on?'In use':'Use'}</button>`:`<button data-a="buy" data-id="${i}" ${a<c.c?'disabled':''}>Unlock</button>`}</div>`};
-  const dn={accent:'Bright cyan',ring:'Solid ring',badge:'No badge'},tt={accent:'Accent colours',ring:'Progress rings',badge:'Profile badges'};
+    return`<div class="card prg"><div class="row"><b>${n}</b><small>${nx?`${Math.floor(v*10)/10}${u} of ${nx}${u}`:'All reached'}</small></div><div class="bar" role="progressbar" aria-label="${n}" aria-valuenow="${Math.round(p)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div><small>${ts.map(t=>(ms[k+'_'+t]?'✓ ':'')+t+u).join(' · ')}</small></div>`}).join('');
+  const fams=Object.entries(FAM).map(([i,f])=>{const t=ftier(i),on=sel('badge')===i;return`<div class="card bcard"><div class="row">${bdg(i,52)}<span><b>${f.n}</b><small>${t?TN[t-1]+' · tier '+t+' of '+Math.min(5,MS[f.k][2].length):'Not earned yet'}</small></span></div><small>Improves with each ${MS[f.k][0].toLowerCase()} milestone.</small><button data-a="use" data-id="${i}" data-k="badge" ${!t||on?'disabled':''}>${on?'Showing':t?'Show on profile':'Locked'}</button></div>`}).join('')
+   +Object.entries(CAT).filter(([i,c])=>c.old&&un[i]).map(([i,c])=>`<div class="card bcard"><div class="row"><span class="bdg t2" style="--bc:#22d3ee"><i>${c.v}</i></span><span><b>${c.n}</b><small>Classic badge</small></span></div><button data-a="use" data-id="${i}" data-k="badge" ${sel('badge')===i?'disabled':''}>${sel('badge')===i?'Showing':'Show on profile'}</button></div>`).join('');
+  const node=([i,c])=>{const own=un[i],on=sel(c.k)===i,lk=own?[]:lock(c),can=!own&&!lk.length&&a>=c.c;
+    return`<div class="node ${own?'own':lk.length?'lk':''}"><div class="pv">${prev(i,c)}</div><div class="nb"><b>${c.n}<em>Tier ${c.t}</em></b><small>${c.d||''}</small><small class="rq">${own?'Unlocked':lk.length?'Needs: '+lk.join(', '):c.c+' points'}</small></div>${own?`<button data-a="use" data-id="${i}" data-k="${c.k}" ${on?'disabled':''}>${on?'In use':'Use'}</button>`:`<button data-a="buy" data-id="${i}" ${can?'':'disabled'}>${lk.length?'Locked':c.c+' pts'}</button>`}</div>`};
+  const br={accent:'Accent colours',ring:'Progress rings',page:'Diary pages',frame:'Avatar frames'},df={accent:'Bright cyan',ring:'Solid ring',page:'Plain page',frame:'No frame'};
+  const tree=Object.keys(br).map(k=>`<section class="card branch"><h3>${br[k]}</h3><div class="node own"><div class="pv">${prev(null,{k})}</div><div class="nb"><b>${df[k]}</b><small>Default</small></div><button data-a="use" data-id="none" data-k="${k}" ${sel(k)?'':'disabled'}>${sel(k)?'Use':'In use'}</button></div>${Object.entries(CAT).filter(([,c])=>c.k===k&&!c.old).sort((x,y)=>x[1].t-y[1].t).map(node).join('')}</section>`).join('');
   return`<h1 class="serif">Rewards</h1><p class="msg">Points come from studying, hitting targets, steady weeks and coming back after a break. They never expire, and a missed day takes nothing away.</p>
-  <div class="g" style="margin-top:14px"><div class="card"><div class="mu">Available Pulse Points</div><div class="big">${a}</div><small>${earned()} earned in total</small></div><div class="card"><div class="mu">How points work</div><small>1 per 5 minutes (up to 60 a day) · 10 per subject target · 25 for all targets in a day · 20 for a week with 5 study days · 15 for returning after a break. Each is earned once.</small></div></div>
-  <h2 class="serif">Milestones</h2><div class="g">${prog}</div>
+  <div class="g"><div class="card prg"><div class="mu">Available Pulse Points</div><div class="big">${a}</div><small>${earned()} earned in total</small></div><div class="card prg"><div class="mu">How points work</div><small>Time is pooled across all your activities: 1 point per 5 minutes (up to 60 a day). Each category you complete gives 10. A day with every category done and 45+ minutes gives 20. A week with 5 study days gives 20, and returning after a break gives 15. Adding more activities never adds more points.</small></div></div>
+  <h2 class="serif">Milestones</h2><p class="mu sub">Each one unlocks once and stays yours, even if a streak resets.</p><div class="g">${prog}</div>
   <h2 class="serif">Recent achievements</h2><div class="card">${rec.map(([id,t])=>{const[k,v]=id.split('_');return`<div class="item"><span>✦ ${v}${MS[k][1]} ${MS[k][0].toLowerCase()} <small>${new Date(t).toLocaleDateString()}</small></span></div>`}).join('')||'<p class="mu">Your first milestone is closer than it looks.</p>'}</div>
-  <h2 class="serif">Unlockables</h2><div class="card">${['accent','ring','badge'].map(k=>`<h3>${tt[k]}</h3><div class="item"><span>${k==='accent'?'<i class="sw" style="background:#22d3ee"></i>':''}${dn[k]} <small>Default</small></span><button data-a="use" data-id="none" data-k="${k}" ${sel(k)?'':'disabled'}>${sel(k)?'Use':'In use'}</button></div>${Object.entries(CAT).filter(([,c])=>c.k===k).map(item).join('')}`).join('')}</div>`};
+  <h2 class="serif">Badges</h2><p class="mu sub">They rise from Spark to Aurora as your milestones grow.</p><div class="bgrid">${fams}</div>
+  <h2 class="serif">Reward tree</h2><p class="mu sub">Each reward needs the one before it, and the higher tiers also need a milestone. Cheaper tiers open the way to the spectacular ones.</p><div class="tree">${tree}</div>`};
+/* ===== profile, avatar, nameplate ===== */
+const NT=[[0,0,0],[150,5,2],[600,20,6],[1800,60,12],[4500,150,20]],NN=['Classic','Gradient','Layered','Shimmer','Aurora'];
+function tierNow(){const p=earned(),d=met().days,m=Object.keys(S.rw.ms||{}).length;let t=1;NT.forEach((r,i)=>{if(p>=r[0]&&d>=r[1]&&m>=r[2])t=i+1});return t}
+const wc=t=>t.trim()?t.trim().split(/\s+/).length:0;
+const PRE=[['p1','◔','#22d3ee','#2fbf8f'],['p2','✦','#a78bfa','#22d3ee'],['p3','☀','#f59e0b','#f472b6'],['p4','♪','#f472b6','#a78bfa'],['p5','⚛','#34d399','#38bdf8'],['p6','♥','#fb7185','#f59e0b'],['p7','⚡','#facc15','#22d3ee'],['p8','✿','#f472b6','#2fbf8f']];
+const avInner=id=>{const p=PRE.find(x=>x[0]===id)||PRE[0];return`<i style="background:linear-gradient(135deg,${p[2]},${p[3]})">${p[1]}</i>`};
+const av=z=>{const a=S.profile.avatar||'p1';return`<span class="av ${sel('frame')}" style="--z:${z}px">${a==='custom'&&S.avatar?`<img alt="Your profile picture" src="${esc(S.avatar)}">`:avInner(a)}</span>`};
+const dname=()=>S.profile.displayName||S.profile.username||S.user.email.split('@')[0];
+const msName=id=>{const[k,v]=id.split('_');return MS[k]?`${v}${MS[k][1]} ${MS[k][0].toLowerCase()}`:''};
+function showcase(){let l=(S.profile.showcase||'').split(',').filter(i=>FAM[i]&&ftier(i)>0);if(!l.length)l=Object.keys(FAM).filter(i=>ftier(i)>0).sort((a,b)=>ftier(b)-ftier(a)).slice(0,3);return l.slice(0,3)}
+function plate(){const t=Math.max(S.profile.nameTier||1,tierNow()),sc=showcase(),f=S.profile.featured;
+  return`<section class="plate n${t}" aria-label="Your profile"><div class="ph">${av(t>=4?84:72)}<div class="pb"><h2 class="serif">${esc(dname())}</h2><small class="nt">${NN[t-1]} nameplate</small>${S.profile.bio?`<p>${esc(S.profile.bio)}</p>`:''}</div></div><div class="sc">${sc.map(i=>bdg(i,36+t*4)).join('')||'<small class="mu">Badges you earn will appear here.</small>'}${f&&S.rw.ms?.[f]?`<span class="feat">✦ ${esc(msName(f))}</span>`:''}</div></section>`}
+V.profile=()=>{const pr=S.profile,sc=(pr.showcase||'').split(','),ms=Object.keys(S.rw.ms||{});
+  return`<h1 class="serif">Profile</h1>${plate()}
+  <h2 class="serif">Edit profile</h2><form class="card pform" data-f="prof"><label>Display name<input name="n" maxlength="30" required value="${esc(dname())}"></label><label>Bio <small id="bc">${wc(pr.bio||'')}/19 words</small><input id="bio" name="b" maxlength="200" value="${esc(pr.bio||'')}" placeholder="A line about your goals"></label><button class="pri">Save profile</button></form>
+  <h2 class="serif">Picture</h2><div class="card"><div class="avs">${PRE.map(p=>`<button data-a="avp" data-id="${p[0]}" aria-label="Avatar ${p[0]}" ${(pr.avatar||'p1')===p[0]?'aria-pressed="true"':''}><span class="av" style="--z:44px">${avInner(p[0])}</span></button>`).join('')}</div><div class="row" style="margin-top:var(--s3)"><label class="up">Upload a photo<input type="file" id="avf" accept="image/png,image/jpeg,image/webp"></label>${pr.avatar==='custom'?'<button data-a="avx">Remove photo</button>':''}</div><small class="mu">Photos are cropped to a small square and stored only in your account.</small></div>
+  <h2 class="serif">Showcase</h2><div class="card"><p class="mu" style="margin:0 0 var(--s3)">Choose up to 3 badges to display on your nameplate.</p><div class="row">${Object.entries(FAM).map(([i,f])=>`<label class="chip"><input type="checkbox" data-sc="${i}" ${sc.includes(i)?'checked':''} ${ftier(i)?'':'disabled'}> ${f.n}</label>`).join('')}</div><label style="margin-top:var(--s3)">Featured achievement<select data-ft><option value="">None</option>${ms.map(i=>`<option value="${i}" ${pr.featured===i?'selected':''}>${esc(msName(i))}</option>`).join('')}</select></label></div>
+  <p class="mu"><small>Your profile is private. There is no public leaderboard. If one is added later, you will choose whether to take part.</small> <a href="#settings" style="color:var(--cy)">Settings</a></p>`};
+function avUp(f){if(!f)return;if(f.size>5e6||!/^image\/(png|jpeg|webp)$/.test(f.type))return toast('Choose a PNG, JPEG or WebP image under 5 MB.');
+  const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=128;const m=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,128,128);URL.revokeObjectURL(u);const d=c.toDataURL('image/jpeg',.8);if(d.length>28000)return toast('That image is too detailed. Try another.');run(async()=>{await W({avatar:d,'profile/avatar':'custom'});toast('Photo updated.')})};im.onerror=()=>toast('That image could not be read.');im.src=u}
+document.addEventListener('input',e=>{if(e.target.id==='bio'){const n=wc(e.target.value);$('bc').textContent=n+'/19 words';$('bc').style.color=n>19?'#fca5a5':''}});
 /* ===== dialogs ===== */
 function sessDlg(o){const hs=Object.entries(S.habits).filter(([i,h])=>!h.archived||i===o.h);const id=o.id||push(ref(db)).key;
   $('dlg').innerHTML=`<form data-f="sess"><h3>${o.id?'Edit session':'Add study time'}</h3><label>Subject<select name="h">${hs.map(([i,h])=>`<option value="${i}" ${i===o.h?'selected':''}>${esc(h.name)}</option>`).join('')}</select></label>
@@ -323,22 +439,28 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
     if(s<30){setT(null);render();return toast('Under 30 seconds, so nothing was saved.')}
     const sid=push(ref(db)).key;await commit([{d:today(),id:sid,rec:{habitId:t.id,habitName:h?.name||'Study',seconds:s,startedAt:t.start,endedAt:Date.now(),source:'timer'}}]);setT(null);render();toast('Session saved.')});
   if(a==='add')return sessDlg({h:id});
+  if(a==='newact'){const c=b.dataset.k;$('dlg').innerHTML=`<form data-f="act"><h3>New activity</h3><label>Category<select name="c">${CATS.map(x=>`<option value="${x.id}" ${x.id===c?'selected':''}>${x.n} · ${x.sub}</option>`).join('')}</select></label><label>Name<input name="n" maxlength="40" required placeholder="e.g. Mathematics, Running, Guitar"></label><label>Icon<select name="i">${ICONS.map(i=>`<option>${i}</option>`).join('')}</select></label><label>Daily target (minutes)<input name="m" type="number" min="5" max="600" value="30" required></label><div class="row"><button type="button" data-a="close">Cancel</button><button class="pri">Add</button></div></form>`;return $('dlg').showModal()}
+  if(a==='avp')return run(()=>W({'profile/avatar':id}));
+  if(a==='avx')return run(()=>W({avatar:null,'profile/avatar':'p1'}));
   if(a==='quick')return run(()=>commit([{d:today(),id:push(ref(db)).key,rec:{habitId:id,habitName:S.habits[id].name,seconds:600,startedAt:Date.now(),endedAt:Date.now(),source:'manual'}}]));
-  if(a==='buy')return run(async()=>{const c=CAT[id];if(!c||S.rw.unlocked?.[id]||avail()<c.c)return toast('Not enough Pulse Points yet.');await W({['rewards/unlocked/'+id]:Date.now()});toast('✦ Unlocked: '+c.n)});
+  if(a==='buy')return run(async()=>{const c=CAT[id];if(!c||c.old||S.rw.unlocked?.[id]||lock(c).length)return toast('That reward is still locked.');if(avail()<c.c)return toast('Not enough Pulse Points yet.');await W({['rewards/unlocked/'+id]:Date.now()});toast('✦ Unlocked: '+c.n)});
   if(a==='use')return run(()=>W({['rewards/sel/'+b.dataset.k]:id==='none'?null:id}));
-  if(a==='reset'){if(prompt('This erases all study sessions, chapters and rewards. Your subjects and targets stay. Type RESET to continue.')==='RESET')run(async()=>{if(!S.online)return toast('Connect to the internet first.');await update(ref(db,'users/'+S.uid),{daily:null,sessions:null,chapters:null,rewards:null});setT(null);toast('Progress reset. A fresh start.')});return}
+  if(a==='reset'){if(prompt('This erases all study sessions, chapters and rewards. Your subjects and targets stay. Type RESET to continue.')==='RESET')run(async()=>{if(!S.online)return toast('Connect to the internet first.');await update(ref(db,'users/'+S.uid),{daily:null,sessions:null,chapters:null,rewards:null,'profile/nameTier':null,'profile/showcase':null,'profile/featured':null});setT(null);toast('Progress reset. A fresh start.')});return}
   if(a==='delacct'){$('dlg').innerHTML=`<form data-f="del"><h3>Delete account</h3><p class="mu">This permanently deletes your account and all of its data. It can’t be undone.</p><label>Confirm your password<input name="p" type="password" autocomplete="current-password" required></label><p class="err" id="derr" role="alert"></p><div class="row"><button type="button" data-a="close">Cancel</button><button class="pri">Delete everything</button></div></form>`;return $('dlg').showModal()}
   if(a==='edit'){const r=S.sessions[d]?.[id];if(r)sessDlg({id,h:r.habitId,m:Math.round(r.seconds/60),d,o:d,n:r.notes})}
   if(a==='del'&&confirm('Delete this session? Totals and streaks will be recalculated.'))return run(()=>commit([{d,id,rec:null}]));
   if(a==='chren'){const[h,c]=b.dataset.k.split('|'),n=prompt('Rename chapter',S.chapters[h]?.[c]?.title);if(n&&n.trim())run(()=>W({[`chapters/${h}/${c}/title`]:n.trim().slice(0,80),[`chapters/${h}/${c}/updatedAt`]:Date.now()}))}
   if(a==='chdel'){const[h,c]=b.dataset.k.split('|');if(confirm('Remove this chapter?'))run(()=>W({[`chapters/${h}/${c}`]:null}))}
-  if(a==='hdel'&&confirm('Remove this subject? Its history is kept.'))run(()=>W({[`habits/${id}/archived`]:true}));
+  if(a==='hdel'&&confirm('Remove this activity? Its history is kept.'))run(()=>W({[`habits/${id}/archived`]:true}));
 });
 document.addEventListener('toggle',e=>{const o=e.target.dataset?.o;if(o)S.open[o]=e.target.open},true);
 document.addEventListener('change',e=>{const t=e.target;
+  if(t.dataset.sc!==undefined){const l=[...document.querySelectorAll('[data-sc]:checked')].map(x=>x.dataset.sc);if(l.length>3){t.checked=false;return toast('Pick up to 3 badges.')}run(()=>W({'profile/showcase':l.join(',')||null}));return}
+  if(t.dataset.ft!==undefined){run(()=>W({'profile/featured':t.value||null}));return}
+  if(t.id==='avf'){avUp(t.files[0]);return}
   if(t.dataset.ch){const[h,c]=t.dataset.ch.split('|'),n=Date.now(),u={[`chapters/${h}/${c}/status`]:t.value,[`chapters/${h}/${c}/updatedAt`]:n,[`chapters/${h}/${c}/completedAt`]:t.value==='done'?n:null};
     run(async()=>{await W(u);if(t.value==='done')toast('Chapter completed. That’s a real milestone.')})}
-  if(t.dataset.ht){const v=Math.round(+t.value);if(!(v>=1&&v<=600)){toast('Target must be 1–600 minutes.');return render()}run(()=>W({[`habits/${t.dataset.ht}/targetMinutes`]:v}))}
+  if(t.dataset.ht){const v=Math.round(+t.value);if(!(v>=5&&v<=600)){toast('Target must be 5–600 minutes.');return render()}run(()=>W({[`habits/${t.dataset.ht}/targetMinutes`]:v}))}
   if(t.dataset.hn){const v=t.value.trim().slice(0,40);if(!v)return render();run(()=>W({[`habits/${t.dataset.hn}/name`]:v}))}});
 document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)return;e.preventDefault();const F=new FormData(f);
   if(k==='sess')run(async()=>{const m=Math.round(+F.get('m')),d=F.get('d'),id=F.get('id'),od=F.get('od'),h=S.habits[F.get('h')];
@@ -349,7 +471,12 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
   if(k==='del')run(async()=>{const u=auth.currentUser,er=$('derr');
     try{await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,F.get('p')))}catch(x){return er.textContent=x.code==='auth/network-request-failed'?'Network problem. Try again.':'Password is incorrect.'}
     if(!S.online)return er.textContent='Connect to the internet first.';
-    S.dying=1;await update(ref(db,'users/'+S.uid),{profile:null,habits:null,daily:null,sessions:null,chapters:null,rewards:null});setT(null);await deleteUser(u);$('dlg').close()});
+    S.dying=1;await update(ref(db,'users/'+S.uid),{profile:null,avatar:null,habits:null,daily:null,sessions:null,chapters:null,rewards:null});setT(null);await deleteUser(u);$('dlg').close()});
+  if(k==='prof')run(async()=>{const n=F.get('n').trim().slice(0,30),b=F.get('b').trim();if(!n)return toast('Add a display name.');if(wc(b)>19)return toast('Keep your bio under 20 words.');await W({'profile/displayName':n,'profile/bio':b||null,'profile/visibility':'private'});toast('Profile saved.')});
+  if(k==='act')run(async()=>{const n=F.get('n').trim().slice(0,40),m=Math.round(+F.get('m')),c=F.get('c');
+    if(!n||!(m>=5&&m<=600)||!CC[c])return toast('Give it a name and a target of 5 to 600 minutes.');
+    if(H().filter(h=>h.cat===c).length>=12)return toast('That category has 12 activities. Remove one first.');
+    await W({['habits/'+push(ref(db)).key]:{name:n,icon:F.get('i'),color:CC[c],category:c,targetMinutes:m,order:Math.max(-1,...Object.values(S.habits).map(h=>h.order||0))+1}});$('dlg').close();toast('Activity added.')});
   if(k==='ch'){const t=F.get('t').trim();if(!t)return;const id=push(ref(db)).key,h=f.dataset.h;S.open[h]=true;run(()=>W({[`chapters/${h}/${id}`]:{title:t.slice(0,80),status:'todo',updatedAt:Date.now()}}))}
   if(k==='hab'){const hs=Object.values(S.habits),pal=['#5eead4','#22d3ee','#34d399','#38bdf8','#7dd3fc','#2dd4bf'],id=push(ref(db)).key;
     run(()=>W({['habits/'+id]:{name:F.get('n').trim().slice(0,40),icon:'●',color:pal[hs.length%6],targetMinutes:Math.min(600,Math.max(1,Math.round(+F.get('m')))),order:Math.max(-1,...hs.map(h=>h.order))+1}}))}});
@@ -369,15 +496,15 @@ $('af').onsubmit=async e=>{e.preventDefault();const u=$('un').value.trim().toLow
   $('sub').disabled=false};
 const show=w=>{$('splash').hidden=w!=='splash';$('auth').hidden=w!=='auth';$('app').hidden=w!=='app'};
 async function seed(){if(seeding)return;seeding=1;const b='users/'+S.uid;
-  try{if((await get(ref(db,b+'/profile/seeded'))).val())return;const habits={};D.forEach((d,i)=>habits[d[0]]={name:d[1],icon:d[2],color:d[3],targetMinutes:d[4],order:i});
-    await update(ref(db,b),{profile:{username:S.user.email.split('@')[0],createdAt:Date.now(),seeded:true},habits})}
+  try{if((await get(ref(db,b+'/profile/seeded'))).val())return;
+    await update(ref(db,b),{profile:{username:S.user.email.split('@')[0],createdAt:Date.now(),seeded:true,schema:2}})}
   catch(e){toast('Could not set up your account data ('+(e.code||'error')+'). Reload to retry.');seeding=0}}
 function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(from?query(ref(db,b+p),orderByKey(),startAt(from)):ref(db,b+p),s=>{fn(s.val()||{});S.got[p]=1;render();sync()},e=>toast('Could not load '+p+' ('+e.code+').')));
   S.win=add(today(),-14);
   L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed()});L('habits',v=>{S.habits=v;S.ready=1});
-  L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);
+  L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);L('avatar',v=>S.avatar=typeof v==='string'?v:'');
   const t=getT();if(t&&chk(t))toast('A session was interrupted. Only time up to the last check-in was kept.');route()}
-onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];Object.assign(S,{ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0});seeding=0;
+onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];Object.assign(S,{ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,avatar:''});seeding=0;
   if(!u){S.uid=null;show('auth');return}
   S.uid=u.uid;S.user=u;show('app');boot()});
 onValue(ref(db,'.info/connected'),s=>{S.online=!!s.val();$('dot').className=S.online?'on':'';$('dtx').textContent=S.online?'online':'offline'});
