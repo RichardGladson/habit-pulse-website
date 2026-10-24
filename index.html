@@ -612,6 +612,8 @@ async function loadFriendsLb(){
   if(!ids.length){S.flb=[];return}
   const snaps=await Promise.all(ids.map(id=>get(ref(db,`users/${id}/weekStats/${w}`)).then(s=>({id,v:s.val()})).catch(()=>({id,v:null}))));
   S.flb=snaps.filter(x=>x.v&&typeof x.v.s==='number').map(x=>({id:x.id,...x.v})).sort((a,b)=>b.s-a.s);
+  for(const r of S.flb){if(r.n)nameCache[r.id]=r.n;if(r.a&&!String(avCache[r.id]||'').startsWith('data:'))avCache[r.id]=r.a}
+  await resolveNames(ids); // fills custom avatars too
 }
 async function loadGroupLb(gid){
   if(!gid){S.glb=[];S.gMembers={};return}
@@ -625,7 +627,8 @@ async function loadGroupLb(gid){
     const ids=Object.keys(mems);
     const snaps=await Promise.all(ids.map(id=>get(ref(db,`users/${id}/weekStats/${w}`)).then(s=>({id,v:s.val()})).catch(()=>({id,v:null}))));
     S.glb=snaps.filter(x=>x.v&&typeof x.v.s==='number').map(x=>({id:x.id,...x.v})).sort((a,b)=>b.s-a.s);
-    for(const r of S.glb){if(r.n)nameCache[r.id]=r.n}
+    for(const r of S.glb){if(r.n)nameCache[r.id]=r.n;if(r.a&&!String(avCache[r.id]||'').startsWith('data:'))avCache[r.id]=r.a}
+    await resolveNames(ids);
   }catch(e){toast('Could not load group ('+(e.code||'error')+').')}
   S.gLoading=0;render();
 }
@@ -668,8 +671,9 @@ V.board=()=>{const{ws}=lbWk(),pub=S.profile.visibility==='public',tab=S.boardTab
   const mkRow=(id,r,rk,forceMe)=>{const me=id===S.uid||!!forceMe,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
     const label=r.n||nameCache[id]||(me?dname():'User');
     if(r.n)nameCache[id]=r.n;
+    if(r.a&&!String(avCache[id]||'').startsWith('data:'))avCache[id]=r.a;
     const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
-    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd" role="img" aria-label="Days studied this week">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b>${avHtml(id,36,r.a||'p1')}<span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd" role="img" aria-label="Days studied this week">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
 
   if(tab==='world'){
     const e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s);
@@ -716,7 +720,7 @@ V.friends=()=>{
   const mkRow=(id,r,rk)=>{const me=id===S.uid,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
     const label=r.n||nameCache[id]||'Friend';
     const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
-    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b>${avHtml(id,36,r.a||'p1')}<span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
   // kick off name resolution for friends list
   const needNames=[...fri,...inc.map(([id])=>id),...out].filter(id=>!nameCache[id]);
   if(needNames.length)resolveNames(needNames).then(()=>render());
@@ -748,7 +752,7 @@ V.groups=()=>{
   const mkRow=(id,r,rk)=>{const me=id===S.uid,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
     const label=r.n||nameCache[id]||'Member';
     const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
-    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b>${avHtml(id,36,r.a||'p1')}<span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
   return`<h1 class="serif">Groups</h1>
   <p class="msg">Create groups with friends and compete on weekly consistency. You can be in multiple groups.</p>
   <div class="card">
