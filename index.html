@@ -350,7 +350,7 @@ v_dual:{k:'frame',n:'Double ring',c:100,t:2,r:['v_plain','a_teal'],d:'Two layere
 v_glow:{k:'frame',n:'Glow ring',c:220,t:3,r:['v_dual','r_glow'],d:'Layered rings with a soft glow.'},
 v_spin:{k:'frame',n:'Prism ring',c:450,t:4,r:['v_glow','a_sea'],g:['days',14],d:'A slowly turning colour rim.'},
 v_crown:{k:'frame',n:'Crown',c:900,t:5,r:['v_spin','p_glass'],g:['days',100],d:'A turning rim, a halo and a crown.'},
-b_pulse:{k:'badge\',n:'Forge',c:30,v:'◉',old:1},b_steady:{k:'badge',n:'Steady',c:50,v:'≈',old:1},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎',old:1},b_back:{k:'badge',n:'Comeback',c:50,v:'↺',old:1}};
+b_pulse:{k:'badge',n:'Forge',c:30,v:'◉',old:1},b_steady:{k:'badge',n:'Steady',c:50,v:'≈',old:1},b_focus:{k:'badge',n:'Deep focus',c:80,v:'◎',old:1},b_back:{k:'badge',n:'Comeback',c:50,v:'↺',old:1}};
 const FAM={f_focus:{n:'Deep Focus',k:'hours',g:'◎',c:'#22d3ee'},f_steady:{n:'Steady',k:'streak',g:'≈',c:'#2fbf8f'},f_days:{n:'Showing Up',k:'days',g:'◉',c:'#a78bfa'},f_chap:{n:'Finisher',k:'chapters',g:'✓',c:'#f59e0b'}};
 const TN=['Spark','Glow','Radiant','Prism','Aurora'];
 const ftier=i=>Math.min(5,MS[FAM[i].k][2].filter(t=>S.rw.ms?.[FAM[i].k+'_'+t]).length);
