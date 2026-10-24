@@ -509,9 +509,9 @@ async function lookupFriendPreview(uname){
     const name=stats?.n||prof.displayName||prof.username||uname;
     const a=stats?.a||(/^p[1-8]$/.test(prof.avatar||'')?prof.avatar:'p1');
     const sc=stats&&typeof stats.s==='number'?stats.s:null;
-    suggUid=uid;
+    suggUid=uid;if(/^p[1-8]$/.test(a))avCache[uid]=a;
     box.className='fsugg on ok';
-    box.innerHTML=`<span class="av" style="--z:40px">${avInner(a)}</span><span><b>${esc(name)}</b><small>@${esc(uname)}${sc!=null?' · '+sc+' pts this week':''}</small></span>`;
+    box.innerHTML=`${avHtml(uid,40)}<span><b>${esc(name)}</b><small>@${esc(uname)}${sc!=null?' · '+sc+' pts this week':''}</small></span>`;
   }catch(e){box.className='fsugg on err';box.innerHTML='<small>Lookup failed</small>'}
 }
 document.addEventListener('input',e=>{
@@ -533,23 +533,47 @@ async function ensureUsernameIndex(){
 }
 
 
-/* display-name cache */
-const nameCache={};
+/* display-name + avatar cache */
+const nameCache={}, avCache={};
+function avFor(uid, fallback){
+  if(uid===S.uid){
+    const a=S.profile.avatar||'p1';
+    if(a==='custom'&&S.avatar)return null; // signal custom
+    return /^p[1-8]$/.test(a)?a:(fallback||'p1');
+  }
+  return avCache[uid]||fallback||'p1';
+}
+function avHtml(uid,z,fallback){
+  z=z||36;
+  if(uid===S.uid&&S.profile.avatar==='custom'&&S.avatar)
+    return`<span class="av ${sel('frame')}" style="--z:${z}px"><img alt="" src="${esc(S.avatar)}"></span>`;
+  if(avCache[uid]&&String(avCache[uid]).startsWith('data:'))
+    return`<span class="av" style="--z:${z}px"><img alt="" src="${esc(avCache[uid])}"></span>`;
+  return`<span class="av" style="--z:${z}px">${avInner(avFor(uid,fallback))}</span>`;
+}
 async function fetchDisplay(uid){
   if(!uid)return 'User';
   if(uid===S.uid)return dname();
-  if(nameCache[uid])return nameCache[uid];
+  if(nameCache[uid]&&avCache[uid])return nameCache[uid];
   try{
     const{w}=lbWk();
-    const [s1,s2]=await Promise.all([
+    const [s1,s2,s3]=await Promise.all([
       get(ref(db,`users/${uid}/weekStats/${w}`)).catch(()=>null),
-      get(ref(db,`users/${uid}/profile`)).catch(()=>null)
+      get(ref(db,`users/${uid}/profile`)).catch(()=>null),
+      get(ref(db,`users/${uid}/avatar`)).catch(()=>null)
     ]);
     const stats=s1?s1.val():null,prof=(s2&&s2.val())||{};
     const n=stats?.n||prof.displayName||prof.username||uid.slice(0,8);
     nameCache[uid]=n;
+    const custom=s3?s3.val():null;
+    if(typeof custom==='string'&&custom.startsWith('data:'))avCache[uid]=custom;
+    else{
+      const preset=stats?.a||prof.avatar;
+      if(/^p[1-8]$/.test(preset||''))avCache[uid]=preset;
+      else if(!avCache[uid])avCache[uid]='p1';
+    }
     return n;
-  }catch{return uid.slice(0,8)}
+  }catch{if(!nameCache[uid])nameCache[uid]=uid.slice(0,8);return nameCache[uid]}
 }
 async function resolveNames(uids){
   const out={};
@@ -607,6 +631,7 @@ async function loadGroupLb(gid){
 }
 async function showUserProfile(uid, displayName){
   if(!uid)return;
+  await fetchDisplay(uid);
   const{w}=lbWk();
   let stats=null, prof={};
   try{
@@ -617,14 +642,13 @@ async function showUserProfile(uid, displayName){
     stats=snaps[0]?snaps[0].val():null;
     prof=(snaps[1]&&snaps[1].val())||{};
   }catch(e){/* ignore */}
-  const name=displayName||stats?.n||prof.displayName||prof.username||uid.slice(0,8);
-  const a=stats?.a||(/^p[1-8]$/.test(prof.avatar||'')?prof.avatar:'p1');
+  const name=displayName||nameCache[uid]||stats?.n||prof.displayName||prof.username||uid.slice(0,8);
   const sc=stats&&typeof stats.s==='number'?stats.s:'—';
   const days=stats?Array.from({length:7},(_,i)=>stats['d'+i]).filter(Boolean).length:0;
   const isFriend=!!S.friends[uid];
   const isSelf=uid===S.uid;
   $('dlg').innerHTML=`<div><h3 class="serif" style="margin:0 0 12px">${esc(name)}</h3>
-    <div class="row" style="margin-bottom:12px"><span class="av" style="--z:56px">${avInner(a)}</span>
+    <div class="row" style="margin-bottom:12px">${avHtml(uid,56)}
       <div><div class="big" style="font-size:1.4rem">${sc}</div><small>points this week · ${days} qualifying day${days===1?'':'s'}</small>
       ${isFriend?'<div><small class="mu">✓ Friends</small></div>':''}
       ${isSelf?'<div><small class="mu">This is you</small></div>':''}
@@ -635,23 +659,54 @@ async function showUserProfile(uid, displayName){
 }
 
 
-V.board=()=>{const{ws}=lbWk(),pub=S.profile.visibility==='public';
-  const e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s);
-  const mine=S.lbMine;
-  let selfRank='·';
-  if(mine){selfRank=1+e.filter(([,r])=>r.s>mine.s).length}
-  const mkRow=(id,r,rk,forceMe)=>{const me=id===S.uid||forceMe,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
-    const label=r.n||(me?dname():'User');
+V.board=()=>{const{ws}=lbWk(),pub=S.profile.visibility==='public',tab=S.boardTab||'world';
+  const tabs=`<div class="tabs" role="tablist">
+    <button type="button" role="tab" aria-selected="${tab==='world'}" data-a="btab" data-t="world">World</button>
+    <button type="button" role="tab" aria-selected="${tab==='friends'}" data-a="btab" data-t="friends">Friends</button>
+    <button type="button" role="tab" aria-selected="${tab==='groups'}" data-a="btab" data-t="groups">Groups</button>
+  </div>`;
+  const mkRow=(id,r,rk,forceMe)=>{const me=id===S.uid||!!forceMe,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
+    const label=r.n||nameCache[id]||(me?dname():'User');
+    if(r.n)nameCache[id]=r.n;
     const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
     return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd" role="img" aria-label="Days studied this week">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
-  const rows=e.map(([id,r])=>mkRow(id,r,1+e.filter(([,y])=>y.s>r.s).length)).join('');
-  const selfRow=(mine&&!e.some(([id])=>id===S.uid))?mkRow(S.uid,mine,selfRank,true):'';
-  return`<h1 class="serif">Leaderboard</h1>
-  <p class="msg">Compete on consistency, not effort. Studying 20 minutes counts the same as studying 5 hours.</p>
-  <div class="card"><div class="row"><span><b>${pub?'You are on the world leaderboard':'Join the weekly world leaderboard'}</b><br><small>${pub?'Your display name, avatar and study days are visible.':'Optional. Only display name, avatar and which days you studied are shared.'}</small></span><button class="${pub?'':'pri'}" data-a="${pub?'lbleave':'lbjoin'}">${pub?'Leave':'Join'}</button></div></div>
-  <h2 class="serif">This week · World</h2><p class="mu sub">Week of ${ws}, Monday–Sunday.</p>
-  <div class="lbl">${rows||'<p class="mu">No one is on the board yet this week.</p>'}${selfRow}</div>
-  <h2 class="serif">How scoring works</h2><div class="card"><p style="margin:0">10 points per day with ≥20 minutes, plus 20 for a perfect 7-day week.</p></div>`};
+
+  if(tab==='world'){
+    const e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s);
+    const mine=S.lbMine;
+    let selfRank='·';
+    if(mine)selfRank=1+e.filter(([,r])=>r.s>mine.s).length;
+    const rows=e.map(([id,r])=>mkRow(id,r,1+e.filter(([,y])=>y.s>r.s).length)).join('');
+    const selfRow=(mine&&!e.some(([id])=>id===S.uid))?mkRow(S.uid,mine,selfRank,true):'';
+    return`<h1 class="serif">Leaderboard</h1>${tabs}
+    <p class="msg">Compete on consistency, not effort. Studying 20 minutes counts the same as studying 5 hours.</p>
+    <div class="card"><div class="row"><span><b>${pub?'You are on the world leaderboard':'Join the weekly world leaderboard'}</b><br><small>${pub?'Your display name, avatar and study days are visible.':'Optional. Only display name, avatar and which days you studied are shared.'}</small></span><button class="${pub?'':'pri'}" data-a="${pub?'lbleave':'lbjoin'}">${pub?'Leave':'Join'}</button></div></div>
+    <h2 class="serif">This week · World</h2><p class="mu sub">Week of ${ws}, Monday–Sunday.</p>
+    <div class="lbl">${rows||'<p class="mu">No one is on the board yet this week.</p>'}${selfRow}</div>
+    <h2 class="serif">How scoring works</h2><div class="card"><p style="margin:0">10 points per day with ≥20 minutes, plus 20 for a perfect 7-day week.</p></div>`};
+
+  if(tab==='friends'){
+    const flb=S.flb||[];
+    if(!S._flbLoaded){S._flbLoaded=1;loadFriendsLb().then(()=>render())}
+    return`<h1 class="serif">Leaderboard</h1>${tabs}
+    <p class="msg">Weekly consistency among your friends. Manage friends on the <a href="#friends" style="color:var(--cy)">Friends</a> tab.</p>
+    <h2 class="serif">Friends · this week</h2><p class="mu sub">Week of ${ws}.</p>
+    <div class="lbl">${flb.length?flb.map((r,i)=>mkRow(r.id,r,i+1)).join(''):'<p class="mu">No scores from friends yet this week. Add friends on the Friends tab.</p>'}</div>
+    <div class="row" style="margin-top:10px"><button type="button" data-a="refreshflb">Refresh scores</button></div>`};
+
+  /* groups leaderboard section */
+  const gs=Object.entries(S.groups||{}),sg=S.selGroup||(gs[0]&&gs[0][0])||null;
+  if(sg&&sg!==S.selGroup){S.selGroup=sg}
+  const glb=S.glb||[];
+  if(sg&&!S._glbFor){S._glbFor=sg;loadGroupLb(sg)}
+  return`<h1 class="serif">Leaderboard</h1>${tabs}
+  <p class="msg">Weekly consistency inside a group. Create and manage groups on the <a href="#groups" style="color:var(--cy)">Groups</a> tab.</p>
+  ${gs.length?`<div class="card" style="margin-bottom:12px"><label style="margin:0">Group<select id="lb-group" name="lb-group" data-a="sellbg">${gs.map(([gid,info])=>`<option value="${gid}" ${gid===sg?'selected':''}>${esc(info?.name||gid)}</option>`).join('')}</select></label></div>`:'<p class="mu">You are not in any group yet. Create one on the Groups tab.</p>'}
+  ${sg?`<h2 class="serif">Group · ${esc((S.groups[sg]||{}).name||sg)} · this week</h2>
+    <p class="mu sub">Week of ${ws}. ${S.gLoading?'Loading…':''}</p>
+    <div class="lbl">${glb.length?glb.map((r,i)=>mkRow(r.id,r,i+1)).join(''):'<p class="mu">No scores yet this week.</p>'}</div>
+    <div class="row" style="margin-top:10px"><button type="button" data-a="refreshglb" data-id="${sg}">Refresh</button></div>`:''}`;
+};
 
 V.friends=()=>{
   // names resolved async — show cached / uid fallback, refresh when ready
@@ -674,10 +729,10 @@ V.friends=()=>{
     <div id="friend-sugg" class="fsugg" role="status"></div>
     <small class="mu">Type a username — a preview appears when found.</small>
   </div>
-  ${inc.length?`<h2 class="serif">Incoming requests</h2><div class="flist">${inc.map(([id,v])=>{const nm=v.fromName||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b><small>Wants to be friends</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`}).join('')}</div>`:''}
-  ${out.length?`<h2 class="serif">Outgoing requests</h2><div class="flist">${out.map(id=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b>${esc(nameCache[id]||id)}</b><small>Pending</small></span><button data-a="cancelf" data-id="${id}">Cancel</button></div>`).join('')}</div>`:''}
+  ${inc.length?`<h2 class="serif">Incoming requests</h2><div class="flist">${inc.map(([id,v])=>{const nm=v.fromName||nameCache[id]||id;return`<div class="frow">${avHtml(id,36)}<span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b><small>Wants to be friends</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`}).join('')}</div>`:''}
+  ${out.length?`<h2 class="serif">Outgoing requests</h2><div class="flist">${out.map(id=>`<div class="frow">${avHtml(id,36)}<span class="nm"><b>${esc(nameCache[id]||id)}</b><small>Pending</small></span><button data-a="cancelf" data-id="${id}">Cancel</button></div>`).join('')}</div>`:''}
   <h2 class="serif">Your friends (${fri.length})</h2>
-  <div class="flist">${fri.length?fri.map(id=>{const fr=S.friends[id];const nm=(fr&&fr.name)||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b></span><button data-a="unfriend" data-id="${id}">Remove</button></div>`}).join(''):'<p class="mu">No friends yet. Send a request above.</p>'}</div>
+  <div class="flist">${fri.length?fri.map(id=>{const fr=S.friends[id];const nm=(fr&&fr.name)||nameCache[id]||id;if(fr&&fr.a)avCache[id]=fr.a;return`<div class="frow">${avHtml(id,36)}<span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b></span><button data-a="unfriend" data-id="${id}">Remove</button></div>`}).join(''):'<p class="mu">No friends yet. Send a request above.</p>'}</div>
   <h2 class="serif">Friends leaderboard · this week</h2>
   <p class="mu sub">Week of ${ws}.</p>
   <div class="lbl">${flb.length?flb.map((r,i)=>mkRow(r.id,r,i+1)).join(''):'<p class="mu">No scores from friends yet this week.</p>'}</div>
@@ -709,7 +764,7 @@ V.groups=()=>{
       <button data-a="leaveg" data-id="${sg}">Leave group</button>
       ${(S.groups[sg]||{}).role==='owner'?`<button data-a="delg" data-id="${sg}">Delete group</button>`:''}
     </div>
-    <div class="flist" style="margin-top:10px">${memIds.length?memIds.map(id=>{const m=S.gMembers[id]||{};const nm=m.name||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:32px">${avInner(m.a||'p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b> <small>${m.role||'member'}</small></span>${(S.groups[sg]||{}).role==='owner'&&id!==S.uid?`<button data-a="kickg" data-gid="${sg}" data-id="${id}">Remove</button>`:''}</div>`}).join(''):'<p class="mu">Loading members…</p>'}</div>
+    <div class="flist" style="margin-top:10px">${memIds.length?memIds.map(id=>{const m=S.gMembers[id]||{};const nm=m.name||nameCache[id]||id;if(m.a)avCache[id]=m.a;return`<div class="frow">${avHtml(id,32)}<span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b> <small>${m.role||'member'}</small></span>${(S.groups[sg]||{}).role==='owner'&&id!==S.uid?`<button data-a="kickg" data-gid="${sg}" data-id="${id}">Remove</button>`:''}</div>`}).join(''):'<p class="mu">Loading members…</p>'}</div>
     </div>
     <h3>Group leaderboard · this week</h3>
     <p class="mu sub">Week of ${ws}. ${S.gLoading?'Loading…':''}</p>
@@ -726,7 +781,7 @@ V.notifs=()=>{
   return`<h1 class="serif">Notifications</h1>
   <p class="msg">${total?`You have ${total} pending notification${total===1?'':'s'}.`:'You’re all caught up.'}</p>
   <h2 class="serif">Friend requests</h2>
-  <div class="flist">${inc.length?inc.map(([id,v])=>{const nm=v.fromName||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b><small>Wants to be friends · ${v.ts?new Date(v.ts).toLocaleDateString():''}</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`}).join(''):'<p class="mu">No friend requests.</p>'}</div>
+  <div class="flist">${inc.length?inc.map(([id,v])=>{const nm=v.fromName||nameCache[id]||id;return`<div class="frow">${avHtml(id,36)}<span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b><small>Wants to be friends · ${v.ts?new Date(v.ts).toLocaleDateString():''}</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`}).join(''):'<p class="mu">No friend requests.</p>'}</div>
   <h2 class="serif">Group invites</h2>
   <div class="flist">${inv.length?inv.map(([gid,v])=>`<div class="frow"><span class="nm"><b>${esc(v.name||gid)}</b><small>Invited by ${esc(v.byName||'someone')} · ${v.ts?new Date(v.ts).toLocaleDateString():''}</small></span><div class="row"><button class="pri" data-a="acceptg" data-id="${gid}">Join</button><button data-a="declineg" data-id="${gid}">Decline</button></div></div>`).join(''):'<p class="mu">No group invites.</p>'}</div>`};
 
@@ -764,13 +819,14 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   
   if(a==='hdel'&&confirm('Remove this activity? Its history is kept.'))run(()=>W({[`habits/${id}/archived`]:true}));
   /* social */
-  if(a==='btab')return;
+  if(a==='btab'){S.boardTab=b.dataset.t;S._flbLoaded=0;S._glbFor=null;if(S.boardTab==='friends')loadFriendsLb().then(render);if(S.boardTab==='groups'&&S.selGroup)loadGroupLb(S.selGroup);return render()}
   if(a==='refreshflb')return loadFriendsLb().then(()=>{toast('Scores refreshed');render()});
   if(a==='refreshglb')return loadGroupLb(id);
   if(a==='selg'){S.selGroup=id;loadGroupLb(id);return render()}
   if(a==='viewu')return showUserProfile(id,b.dataset.n);
   if(a==='acceptf')return run(async()=>{const from=id;const theirName=(S.incoming[from]||{}).fromName||await fetchDisplay(from);const myName=dname();
-    await WR({[`users/${S.uid}/friends/${from}`]:{name:theirName,since:Date.now()},[`users/${from}/friends/${S.uid}`]:{name:myName,since:Date.now()},[`users/${S.uid}/incoming/${from}`]:null,[`users/${from}/outgoing/${S.uid}`]:null});
+    const theirA=avCache[from]||'p1';const myA=/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1';
+    await WR({[`users/${S.uid}/friends/${from}`]:{name:theirName,a:theirA,since:Date.now()},[`users/${from}/friends/${S.uid}`]:{name:myName,a:myA,since:Date.now()},[`users/${S.uid}/incoming/${from}`]:null,[`users/${from}/outgoing/${S.uid}`]:null});
     nameCache[from]=theirName;toast('Friend added!');S._flbLoaded=0;loadFriendsLb().then(render)});
   if(a==='rejectf')return run(async()=>{await WR({[`users/${S.uid}/incoming/${id}`]:null,[`users/${id}/outgoing/${S.uid}`]:null});toast('Request declined')});
   if(a==='cancelf')return run(async()=>{await WR({[`users/${S.uid}/outgoing/${id}`]:null,[`users/${id}/incoming/${S.uid}`]:null});toast('Request cancelled')});
@@ -790,6 +846,7 @@ document.addEventListener('change',e=>{const t=e.target;
   if(t.dataset.sc!==undefined){const l=[...document.querySelectorAll('[data-sc]:checked')].map(x=>x.dataset.sc);if(l.length>3){t.checked=false;return toast('Pick up to 3 badges.')}run(()=>W({'profile/showcase':l.join(',')||null}));return}
   if(t.dataset.ft!==undefined){run(()=>W({'profile/featured':t.value||null}));return}
   if(t.id==='avf'){avUp(t.files[0]);return}
+  if(t.id==='lb-group'){S.selGroup=t.value;S._glbFor=null;loadGroupLb(t.value);return}
   if(t.dataset.ch){const[h,c]=t.dataset.ch.split('|'),n=Date.now(),u={[`chapters/${h}/${c}/status`]:t.value,[`chapters/${h}/${c}/updatedAt`]:n,[`chapters/${h}/${c}/completedAt`]:t.value==='done'?n:null};
     run(async()=>{await W(u);if(t.value==='done')toast('Chapter completed. That’s a real milestone.')})}
   if(t.dataset.ht){const v=Math.round(+t.value);if(!(v>=5&&v<=600)){toast('Target must be 5–600 minutes.');return render()}run(()=>W({[`habits/${t.dataset.ht}/targetMinutes`]:v}))}
@@ -877,7 +934,7 @@ function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(fro
   S.win=add(today(),-14);
   L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed();else ensureUsernameIndex()});L('habits',v=>{S.habits=v;S.ready=1});
   L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);L('avatar',v=>S.avatar=typeof v==='string'?v:'');
-  L('friends',v=>{S.friends=v||{};for(const[id,val]of Object.entries(S.friends)){if(val&&typeof val==='object'&&val.name)nameCache[id]=val.name}});L('incoming',v=>S.incoming=v||{});L('outgoing',v=>S.outgoing=v||{});
+  L('friends',v=>{S.friends=v||{};for(const[id,val]of Object.entries(S.friends)){if(val&&typeof val==='object'){if(val.name)nameCache[id]=val.name;if(val.a)avCache[id]=val.a}}});L('incoming',v=>S.incoming=v||{});L('outgoing',v=>S.outgoing=v||{});
   L('groups',v=>S.groups=v||{});L('invites',v=>S.invites=v||{});
   const t=getT();if(t&&chk(t))toast('A session was interrupted. Only time up to the last check-in was kept.');route();setInterval(()=>{if(S.uid)pubStats()},60000);pubStats()}
 onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];(S.lbU||[]).forEach(f=>f());S.lbU=[];Object.assign(S,{lbW:0,lb:{},lbMine:null,lbRdy:0,ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,avatar:'',friends:{},incoming:{},outgoing:{},groups:{},invites:{},boardTab:'world',selGroup:null,flb:[],glb:[],gMembers:{},gLoading:0});seeding=0;
