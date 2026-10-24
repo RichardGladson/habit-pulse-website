@@ -514,10 +514,12 @@ async function resolveUsername(uname){
     return null;
   }
 }
-function pubStats(){if(!S.uid||S.dying)return;const{ws,w}=lbWk(),t=today(),ds=[];
+let _pubBusy=0,_pubLast=0;
+function pubStats(){if(!S.uid||S.dying||_pubBusy)return;if(Date.now()-_pubLast<15000)return;_pubBusy=1;_pubLast=Date.now();
+  const{ws,w}=lbWk(),t=today(),ds=[];
   for(let d=ws;d<=t;d=add(d,1))if(q(d))ds.push(d);const k=ds.length,n=dname().slice(0,30),a=/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1',sc=k*10+(k===7?20:0);
   const stats={s:sc,n,a,w,t:serverTimestamp(),...Object.fromEntries(ds.map((d,i)=>['d'+i,d]))};
-  update(ref(db,`users/${S.uid}/weekStats/${w}`),stats).catch(()=>{})}
+  update(ref(db,`users/${S.uid}/weekStats/${w}`),stats).catch(e=>{if(e&&e.code==='PERMISSION_DENIED'&&!S._pubErr){S._pubErr=1;console.warn('weekStats write denied – check RTDB rules')}}).finally(()=>_pubBusy=0)}
 async function loadFriendsLb(){
   const{w}=lbWk();const ids=Object.keys(S.friends||{});
   if(!ids.length){S.flb=[];return}
@@ -715,7 +717,15 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
     try{await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,F.get('p')))}catch(x){return er.textContent=x.code==='auth/network-request-failed'?'Network problem. Try again.':'Password is incorrect.'}
     if(!S.online)return er.textContent='Connect to the internet first.';
     {const w0=lbWk().w,u0={};for(let i=0;i<4;i++)u0[`leaderboard/${w0-i}/${S.uid}`]=null;await update(ref(db),u0).catch(()=>{})}
-    S.dying=1;await update(ref(db,'users/'+S.uid),{profile:null,avatar:null,habits:null,daily:null,sessions:null,chapters:null,rewards:null});setT(null);await deleteUser(u);$('dlg').close()});
+    S.dying=1;
+    const uname=(S.profile.username||(S.user.email||'').split('@')[0]||'').toLowerCase();
+    const wipe={profile:null,avatar:null,habits:null,daily:null,sessions:null,chapters:null,rewards:null,friends:null,incoming:null,outgoing:null,groups:null,invites:null,weekStats:null};
+    await update(ref(db,'users/'+S.uid),wipe);
+    const rootWipe={};
+    if(uname)rootWipe['usernames/'+uname]=null;
+    const w0=lbWk().w;for(let i=0;i<4;i++)rootWipe[`leaderboard/${w0-i}/${S.uid}`]=null;
+    await update(ref(db),rootWipe).catch(()=>{});
+    setT(null);await deleteUser(u);$('dlg').close()});
   if(k==='prof')run(async()=>{const n=F.get('n').trim().slice(0,30),b=F.get('b').trim();if(!n)return toast('Add a display name.');if(wc(b)>19)return toast('Keep your bio under 20 words.');await W({'profile/displayName':n,'profile/bio':b||null,'profile/visibility':S.profile.visibility||'private'});toast('Profile saved.')});
   if(k==='act')run(async()=>{const n=F.get('n').trim().slice(0,40),m=Math.round(+F.get('m')),c=F.get('c');
     if(!n||!(m>=5&&m<=600)||!CC[c])return toast('Give it a name and a target of 5 to 600 minutes.');
