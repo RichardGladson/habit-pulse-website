@@ -47,7 +47,7 @@ details summary{cursor:pointer;min-height:32px}.ch{margin:6px 0}.ch select{width
 dialog{background:var(--card);color:var(--tx);border:1px solid var(--dc);border-radius:16px;max-width:400px;width:92%}dialog::backdrop{background:rgba(0,0,0,.6)}
 #toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:20;width:max-content;max-width:92vw}
 #toast div{background:#0e3a45;border:1px solid var(--cy);padding:10px 16px;border-radius:12px;animation:in .25s}@keyframes in{from{opacity:0;transform:translateY(8px)}}
-@media(max-width:720px){#app{display:block}nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line);padding:6px;z-index:5}nav .brand,nav .sp{display:none}nav a{flex-direction:column;gap:0;font-size:.75rem;padding:6px 10px}main{padding:18px 14px 96px}}
+@media(max-width:720px){nav{overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch}nav a{flex:0 0 auto}#app{display:block}nav{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid var(--line);padding:6px;z-index:5}nav .brand,nav .sp{display:none}nav a{flex-direction:column;gap:0;font-size:.75rem;padding:6px 10px}main{padding:18px 14px 96px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .serif,.note{font-family:"Iowan Old Style",Palatino,Georgia,serif}.serif{font-weight:600}
 .page{background-image:repeating-linear-gradient(transparent 0 35px,rgba(34,211,238,.05) 35px 36px);border-left:3px solid var(--dc);margin-top:14px}
@@ -178,6 +178,32 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
 
 .fsugg{display:none;margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(9,14,17,.5)}.fsugg.on{display:flex;gap:12px;align-items:center}.fsugg .av{flex:none}.fsugg b{display:block}.fsugg small{color:var(--mu)}
 .fsugg.err{border-color:#fca5a5;color:#fca5a5}.fsugg.ok{border-color:var(--sea)}
+
+/* nav badge + denser nav */
+.nav-bell{position:relative}
+.nbadge{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:#ef4444;color:#fff;font-size:.65rem;font-weight:700;display:grid;place-items:center;line-height:1}
+@media(max-width:720px){
+  .nbadge{top:2px;right:2px;min-width:14px;height:14px;font-size:.6rem}
+  nav a{font-size:.65rem;padding:4px 6px;min-height:40px}
+  nav a span{max-width:4.2em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media(max-width:420px){
+  nav a{font-size:.6rem;padding:4px 3px}
+  nav a span{font-size:.58rem}
+}
+/* social pages polish */
+.flist .frow,.glist .grow,.lbl .lbr{min-width:0}
+.frow button,.grow button{flex-shrink:0}
+@media(max-width:480px){
+  .frow{grid-template-columns:32px minmax(0,1fr);gap:8px}
+  .frow .row{grid-column:1/-1;display:flex;gap:8px}
+  .frow .row button{flex:1}
+  .lbr{grid-template-columns:28px 32px minmax(0,1fr) auto;gap:8px;padding:10px}
+  .lbr .sc2{font-size:1rem}
+}
+main h1{word-break:break-word}
+.card .row{min-width:0}
+
 </style>
 </head>
 <body>
@@ -209,11 +235,14 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
   <nav aria-label="Main">
     <div class="brand">Streak Forge</div>
     <a href="#dash" data-v="dash">◔ <span>Dashboard</span></a>
-    <a href="#habits" data-v="habits">✓ <span>Daily Habits</span></a>
+    <a href="#habits" data-v="habits">✓ <span>Habits</span></a>
     <a href="#progress" data-v="progress">▦ <span>Progress</span></a>
     <a href="#rewards" data-v="rewards">✦ <span>Rewards</span></a>
     <a href="#board" data-v="board">🏆 <span>Board</span></a>
-    <a href="#profile" data-v="profile">☺ <span>Profile</span></a>
+    <a href="#friends" data-v="friends">☺ <span>Friends</span></a>
+    <a href="#groups" data-v="groups">☰ <span>Groups</span></a>
+    <a href="#notifs" data-v="notifs" class="nav-bell">🔔 <span>Alerts</span><i id="nbadge" class="nbadge" hidden>0</i></a>
+    <a href="#profile" data-v="profile">◉ <span>Profile</span></a>
     <a href="#settings" data-v="settings">⚙ <span>Settings</span></a>
     <div class="sp"></div><small><i id="dot"></i><span id="dtx">connecting</span></small>
   </nav>
@@ -339,8 +368,8 @@ V.progress=()=>{const t=today(),hs=H(),{best}=streaks();let all=0,days=0,bestD=0
 V.settings=()=>`<h1>Settings</h1><section class="card"><div class="row"><span><b>${esc(S.profile.username||S.user.email.split('@')[0])}</b><br><small>Signed in</small></span><button data-a="logout">Log out</button></div></section>
   <h2>Activities and daily targets</h2><div class="card">${CATS.map(c=>`<div class="row"><b style="color:${c.c}">${c.n}</b><button data-a="newact" data-k="${c.id}">+ Add activity</button></div>${H().filter(h=>h.cat===c.id).map(h=>`<div class="hrow"><input name="hn-${h.id}" id="hn-${h.id}" data-hn="${h.id}" value="${esc(h.name)}" maxlength="40" aria-label="Activity name"><input name="ht-${h.id}" id="ht-${h.id}" data-ht="${h.id}" type="number" min="5" max="600" value="${h.targetMinutes}" aria-label="Daily target minutes"><button data-a="hdel" data-id="${h.id}">Remove</button></div>`).join('')||'<p class="mu"><small>No activities yet.</small></p>'}`).join('')}<p class="mu"><small>Changing a target applies from today. Past days keep the target they were recorded with. Removing an activity hides it but keeps its history.</small></p></div>
   <h2>Time zone policy</h2><div class="card"><p>Days follow this device’s local time (<b>${Intl.DateTimeFormat().resolvedOptions().timeZone}</b>). Each session stores the local date it was recorded on, so travelling never moves old sessions. A day counts toward your streak at 20 minutes of study. Missing a day never removes past progress.</p></div><h2>Reset and delete</h2><div class="card"><div class="row"><span><b>Reset progress</b><br><small>Erases sessions, chapters and rewards. Subjects and targets stay.</small></span><button data-a="reset">Reset progress</button></div><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><div class="row"><span><b>Delete account</b><br><small>Permanently removes your account and all of its data.</small></span><button data-a="delacct">Delete account</button></div></div>`;
-function render(){if(!S.uid)return;look();const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
-  m.innerHTML=S.ready?V[S.view]():'Loading…';document.querySelectorAll('.heat').forEach(e=>e.scrollLeft=e.scrollWidth)}
+function render(){if(!S.uid)return;look();updateBadge();const m=$('main');document.querySelectorAll('nav a').forEach(a=>a.toggleAttribute('aria-current',a.dataset.v===S.view));
+  m.innerHTML=S.ready?(V[S.view]?V[S.view]():V.dash()):'Loading…';document.querySelectorAll('.heat').forEach(e=>e.scrollLeft=e.scrollWidth)}
 
 /* ===== rewards: derived from your data and written once (ratchet), so edits, deletes and retries never double-award ===== */
 const joinKey=()=>key(new Date(S.profile.createdAt||Date.now()));
@@ -503,6 +532,40 @@ async function ensureUsernameIndex(){
   }catch(e){/* rules or network */}
 }
 
+
+/* display-name cache */
+const nameCache={};
+async function fetchDisplay(uid){
+  if(!uid)return 'User';
+  if(uid===S.uid)return dname();
+  if(nameCache[uid])return nameCache[uid];
+  try{
+    const{w}=lbWk();
+    const [s1,s2]=await Promise.all([
+      get(ref(db,`users/${uid}/weekStats/${w}`)).catch(()=>null),
+      get(ref(db,`users/${uid}/profile`)).catch(()=>null)
+    ]);
+    const stats=s1?s1.val():null,prof=(s2&&s2.val())||{};
+    const n=stats?.n||prof.displayName||prof.username||uid.slice(0,8);
+    nameCache[uid]=n;
+    return n;
+  }catch{return uid.slice(0,8)}
+}
+async function resolveNames(uids){
+  const out={};
+  await Promise.all([...new Set(uids.filter(Boolean))].map(async id=>{out[id]=await fetchDisplay(id)}));
+  return out;
+}
+function notifCount(){
+  return Object.keys(S.incoming||{}).length+Object.keys(S.invites||{}).length;
+}
+function updateBadge(){
+  const n=notifCount(),b=$('nbadge');
+  if(!b)return;
+  if(n>0){b.hidden=false;b.textContent=n>99?'99+':String(n)}
+  else b.hidden=true;
+}
+
 async function resolveUsername(uname){
   const u=(uname||'').trim().toLowerCase();
   if(!/^[a-z0-9._-]{3,24}$/.test(u))return null;
@@ -533,10 +596,12 @@ async function loadGroupLb(gid){
     const memSnap=await get(ref(db,`groups/${gid}/members`));
     const mems=memSnap.val()||{};
     S.gMembers=mems;
+    for(const[id,m]of Object.entries(mems)){if(m&&m.name)nameCache[id]=m.name}
     const{w}=lbWk();
     const ids=Object.keys(mems);
     const snaps=await Promise.all(ids.map(id=>get(ref(db,`users/${id}/weekStats/${w}`)).then(s=>({id,v:s.val()})).catch(()=>({id,v:null}))));
     S.glb=snaps.filter(x=>x.v&&typeof x.v.s==='number').map(x=>({id:x.id,...x.v})).sort((a,b)=>b.s-a.s);
+    for(const r of S.glb){if(r.n)nameCache[r.id]=r.n}
   }catch(e){toast('Could not load group ('+(e.code||'error')+').')}
   S.gLoading=0;render();
 }
@@ -569,61 +634,67 @@ async function showUserProfile(uid, displayName){
   $('dlg').showModal();
 }
 
-V.board=()=>{const{ws}=lbWk(),tab=S.boardTab||'world',pub=S.profile.visibility==='public';
-  const tabs=`<div class="tabs" role="tablist">
-    <button role="tab" aria-selected="${tab==='world'}" data-a="btab" data-t="world">World</button>
-    <button role="tab" aria-selected="${tab==='friends'}" data-a="btab" data-t="friends">Friends</button>
-    <button role="tab" aria-selected="${tab==='groups'}" data-a="btab" data-t="groups">Groups</button>
-  </div>`;
+
+V.board=()=>{const{ws}=lbWk(),pub=S.profile.visibility==='public';
+  const e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s);
+  const mine=S.lbMine;
+  let selfRank='·';
+  if(mine){selfRank=1+e.filter(([,r])=>r.s>mine.s).length}
   const mkRow=(id,r,rk,forceMe)=>{const me=id===S.uid||forceMe,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
-    const nameHtml=me?esc(r.n||dname()):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(r.n||'User')}">${esc(r.n||'User')}</span>`;
+    const label=r.n||(me?dname():'User');
+    const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
     return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd" role="img" aria-label="Days studied this week">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+  const rows=e.map(([id,r])=>mkRow(id,r,1+e.filter(([,y])=>y.s>r.s).length)).join('');
+  const selfRow=(mine&&!e.some(([id])=>id===S.uid))?mkRow(S.uid,mine,selfRank,true):'';
+  return`<h1 class="serif">Leaderboard</h1>
+  <p class="msg">Compete on consistency, not effort. Studying 20 minutes counts the same as studying 5 hours.</p>
+  <div class="card"><div class="row"><span><b>${pub?'You are on the world leaderboard':'Join the weekly world leaderboard'}</b><br><small>${pub?'Your display name, avatar and study days are visible.':'Optional. Only display name, avatar and which days you studied are shared.'}</small></span><button class="${pub?'':'pri'}" data-a="${pub?'lbleave':'lbjoin'}">${pub?'Leave':'Join'}</button></div></div>
+  <h2 class="serif">This week · World</h2><p class="mu sub">Week of ${ws}, Monday–Sunday.</p>
+  <div class="lbl">${rows||'<p class="mu">No one is on the board yet this week.</p>'}${selfRow}</div>
+  <h2 class="serif">How scoring works</h2><div class="card"><p style="margin:0">10 points per day with ≥20 minutes, plus 20 for a perfect 7-day week.</p></div>`};
 
-  if(tab==='world'){
-    const e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s);
-    const mine=S.lbMine;
-    // Always show self with correct rank
-    let selfRank='·';
-    if(mine){
-      const better=e.filter(([,r])=>r.s>mine.s).length;
-      selfRank=better+1;
-    }
-    const rows=e.map(([id,r])=>{
-      const rk=1+e.filter(([,y])=>y.s>r.s).length;
-      return mkRow(id,r,rk);
-    }).join('');
-    const selfRow=(mine&&!e.some(([id])=>id===S.uid))?mkRow(S.uid,mine,selfRank,true):'';
-    return`<h1 class="serif">Leaderboard</h1>${tabs}
-    <p class="msg">Compete on consistency, not effort. Studying 20 minutes counts the same as studying 5 hours.</p>
-    <div class="card"><div class="row"><span><b>${pub?'You are on the world leaderboard':'Join the weekly world leaderboard'}</b><br><small>${pub?'Your display name, avatar and study days are visible.':'Optional. Only display name, avatar and which days you studied are shared.'}</small></span><button class="${pub?'':'pri'}" data-a="${pub?'lbleave':'lbjoin'}">${pub?'Leave':'Join'}</button></div></div>
-    <h2 class="serif">This week · World</h2><p class="mu sub">Week of ${ws}, Monday–Sunday.</p>
-    <div class="lbl">${rows||'<p class="mu">No one is on the board yet this week.</p>'}${selfRow}</div>
-    <h2 class="serif">How scoring works</h2><div class="card"><p style="margin:0">10 points per day with ≥20 minutes, plus 20 for a perfect 7-day week. Minutes beyond 20 and number of activities never matter.</p></div>`};
+V.friends=()=>{
+  // names resolved async — show cached / uid fallback, refresh when ready
+  const fri=Object.keys(S.friends||{}),inc=Object.entries(S.incoming||{}),out=Object.keys(S.outgoing||{});
+  const flb=S.flb||[];
+  const{ws}=lbWk();
+  const mkRow=(id,r,rk)=>{const me=id===S.uid,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
+    const label=r.n||nameCache[id]||'Friend';
+    const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
+    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+  // kick off name resolution for friends list
+  const needNames=[...fri,...inc.map(([id])=>id),...out].filter(id=>!nameCache[id]);
+  if(needNames.length)resolveNames(needNames).then(()=>render());
+  if(!S._flbLoaded){S._flbLoaded=1;loadFriendsLb().then(()=>render())}
+  return`<h1 class="serif">Friends</h1>
+  <p class="msg">Add friends by username. You can see each other’s weekly consistency and invite them to groups.</p>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Add a friend</h3>
+    <form class="row" data-f="addf"><input name="u" id="friend-uname" placeholder="Username" maxlength="24" required autocomplete="username" style="flex:1" aria-autocomplete="list" aria-controls="friend-sugg"><button class="pri" type="submit">Send request</button></form>
+    <div id="friend-sugg" class="fsugg" role="status"></div>
+    <small class="mu">Type a username — a preview appears when found.</small>
+  </div>
+  ${inc.length?`<h2 class="serif">Incoming requests</h2><div class="flist">${inc.map(([id,v])=>{const nm=v.fromName||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b><small>Wants to be friends</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`}).join('')}</div>`:''}
+  ${out.length?`<h2 class="serif">Outgoing requests</h2><div class="flist">${out.map(id=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b>${esc(nameCache[id]||id)}</b><small>Pending</small></span><button data-a="cancelf" data-id="${id}">Cancel</button></div>`).join('')}</div>`:''}
+  <h2 class="serif">Your friends (${fri.length})</h2>
+  <div class="flist">${fri.length?fri.map(id=>{const fr=S.friends[id];const nm=(fr&&fr.name)||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b></span><button data-a="unfriend" data-id="${id}">Remove</button></div>`}).join(''):'<p class="mu">No friends yet. Send a request above.</p>'}</div>
+  <h2 class="serif">Friends leaderboard · this week</h2>
+  <p class="mu sub">Week of ${ws}.</p>
+  <div class="lbl">${flb.length?flb.map((r,i)=>mkRow(r.id,r,i+1)).join(''):'<p class="mu">No scores from friends yet this week.</p>'}</div>
+  <div class="row" style="margin-top:10px"><button data-a="refreshflb">Refresh scores</button></div>`};
 
-  if(tab==='friends'){
-    const fri=Object.keys(S.friends||{}),inc=Object.entries(S.incoming||{}),out=Object.keys(S.outgoing||{});
-    const flb=S.flb||[];
-    return`<h1 class="serif">Leaderboard</h1>${tabs}
-    <p class="msg">Add friends by username. You can see each other’s weekly consistency score.</p>
-    <div class="card">
-      <h3 style="margin:0 0 10px">Add a friend</h3>
-      <form class="row" data-f="addf"><input name="u" id="friend-uname" placeholder="Username" maxlength="24" required autocomplete="username" style="flex:1" aria-autocomplete="list" aria-controls="friend-sugg"><button class="pri" type="submit">Send request</button></form>
-      <div id="friend-sugg" class="fsugg" role="status"></div>
-      <small class="mu">Type a username — a preview appears when found. They receive a request they can accept or decline.</small>
-    </div>
-    ${inc.length?`<h2 class="serif">Incoming requests</h2><div class="flist">${inc.map(([id,v])=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(v.fromName||id)}">${esc(v.fromName||id)}</b><small>Wants to be friends</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`).join('')}</div>`:''}
-    ${out.length?`<h2 class="serif">Outgoing requests</h2><div class="flist">${out.map(id=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b>${esc(id)}</b><small>Pending</small></span><button data-a="cancelf" data-id="${id}">Cancel</button></div>`).join('')}</div>`:''}
-    <h2 class="serif">Your friends (${fri.length})</h2>
-    <div class="flist">${fri.length?fri.map(id=>`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(id)}">${esc(id)}</b></span><button data-a="unfriend" data-id="${id}">Remove</button></div>`).join(''):'<p class="mu">No friends yet.</p>'}</div>
-    <h2 class="serif">Friends leaderboard · this week</h2>
-    <p class="mu sub">Week of ${ws}.</p>
-    <div class="lbl">${flb.length?flb.map((r,i)=>mkRow(r.id,r,i+1)).join(''):'<p class="mu">No scores from friends yet this week.</p>'}</div>
-    <div class="row" style="margin-top:10px"><button data-a="refreshflb">Refresh scores</button></div>`};
-
-  /* groups */
+V.groups=()=>{
   const gs=Object.entries(S.groups||{}),inv=Object.entries(S.invites||{}),sg=S.selGroup;
   const glb=S.glb||[];
-  return`<h1 class="serif">Leaderboard</h1>${tabs}
+  const{ws}=lbWk();
+  const memIds=Object.keys(S.gMembers||{});
+  const needNames=memIds.filter(id=>!nameCache[id]);
+  if(needNames.length)resolveNames(needNames).then(()=>render());
+  const mkRow=(id,r,rk)=>{const me=id===S.uid,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
+    const label=r.n||nameCache[id]||'Member';
+    const nameHtml=me?esc(label):`<span class="uname" data-a="viewu" data-id="${id}" data-n="${esc(label)}">${esc(label)}</span>`;
+    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a||'p1')}</span><span class="nm"><span>${nameHtml}${me?' <small>(you)</small>':''}</span><span class="dots lbd">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+  return`<h1 class="serif">Groups</h1>
   <p class="msg">Create groups with friends and compete on weekly consistency. You can be in multiple groups.</p>
   <div class="card">
     <h3 style="margin:0 0 10px">Create a group</h3>
@@ -631,14 +702,14 @@ V.board=()=>{const{ws}=lbWk(),tab=S.boardTab||'world',pub=S.profile.visibility==
   </div>
   ${inv.length?`<h2 class="serif">Group invites</h2><div class="flist">${inv.map(([gid,v])=>`<div class="frow"><span class="nm"><b>${esc(v.name||gid)}</b><small>Invited by ${esc(v.byName||'someone')}</small></span><div class="row"><button class="pri" data-a="acceptg" data-id="${gid}">Join</button><button data-a="declineg" data-id="${gid}">Decline</button></div></div>`).join('')}</div>`:''}
   <h2 class="serif">Your groups (${gs.length})</h2>
-  <div class="glist">${gs.length?gs.map(([gid,info])=>`<div class="grow ${sg===gid?'sel':''}" data-a="selg" data-id="${gid}"><div><b>${esc(info?.name||gid)}</b><small>${info?.role||'member'}</small></div>${sg===gid?'<small class="mu">Selected</small>':''}</div>`).join(''):'<p class="mu">No groups yet.</p>'}</div>
+  <div class="glist">${gs.length?gs.map(([gid,info])=>`<div class="grow ${sg===gid?'sel':''}" data-a="selg" data-id="${gid}"><div><b>${esc(info?.name||gid)}</b><small>${info?.role||'member'}</small></div>${sg===gid?'<small class="mu">Selected</small>':''}</div>`).join(''):'<p class="mu">No groups yet. Create one or accept an invite.</p>'}</div>
   ${sg?`<h2 class="serif">Group · ${esc((S.groups[sg]||{}).name||sg)}</h2>
-    <div class="card"><div class="row"><span><b>Members</b> (${Object.keys(S.gMembers||{}).length})</span>
+    <div class="card"><div class="row" style="flex-wrap:wrap"><span><b>Members</b> (${memIds.length})</span>
       <button data-a="inviteg" data-id="${sg}">Invite friend</button>
       <button data-a="leaveg" data-id="${sg}">Leave group</button>
       ${(S.groups[sg]||{}).role==='owner'?`<button data-a="delg" data-id="${sg}">Delete group</button>`:''}
     </div>
-    <div class="flist" style="margin-top:10px">${Object.entries(S.gMembers||{}).map(([id,m])=>`<div class="frow"><span class="av" style="--z:32px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(id)}">${esc(id)}</b> <small>${m.role||'member'}</small></span>${(S.groups[sg]||{}).role==='owner'&&id!==S.uid?`<button data-a="kickg" data-gid="${sg}" data-id="${id}">Remove</button>`:''}</div>`).join('')||'<p class="mu">Loading members…</p>'}</div>
+    <div class="flist" style="margin-top:10px">${memIds.length?memIds.map(id=>{const m=S.gMembers[id]||{};const nm=m.name||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:32px">${avInner(m.a||'p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b> <small>${m.role||'member'}</small></span>${(S.groups[sg]||{}).role==='owner'&&id!==S.uid?`<button data-a="kickg" data-gid="${sg}" data-id="${id}">Remove</button>`:''}</div>`}).join(''):'<p class="mu">Loading members…</p>'}</div>
     </div>
     <h3>Group leaderboard · this week</h3>
     <p class="mu sub">Week of ${ws}. ${S.gLoading?'Loading…':''}</p>
@@ -646,7 +717,19 @@ V.board=()=>{const{ws}=lbWk(),tab=S.boardTab||'world',pub=S.profile.visibility==
     <div class="row" style="margin-top:10px"><button data-a="refreshglb" data-id="${sg}">Refresh</button></div>`:''}
   <h2 class="serif">How group scoring works</h2><div class="card"><p style="margin:0">Same rules as the world board. Only group members see this board.</p></div>`};
 
-/* ===== dialogs ===== */
+V.notifs=()=>{
+  const inc=Object.entries(S.incoming||{});
+  const inv=Object.entries(S.invites||{});
+  const total=inc.length+inv.length;
+  const needNames=inc.map(([id])=>id).filter(id=>!nameCache[id]);
+  if(needNames.length)resolveNames(needNames).then(()=>render());
+  return`<h1 class="serif">Notifications</h1>
+  <p class="msg">${total?`You have ${total} pending notification${total===1?'':'s'}.`:'You’re all caught up.'}</p>
+  <h2 class="serif">Friend requests</h2>
+  <div class="flist">${inc.length?inc.map(([id,v])=>{const nm=v.fromName||nameCache[id]||id;return`<div class="frow"><span class="av" style="--z:36px">${avInner('p1')}</span><span class="nm"><b class="uname" data-a="viewu" data-id="${id}" data-n="${esc(nm)}">${esc(nm)}</b><small>Wants to be friends · ${v.ts?new Date(v.ts).toLocaleDateString():''}</small></span><div class="row"><button class="pri" data-a="acceptf" data-id="${id}">Accept</button><button data-a="rejectf" data-id="${id}">Decline</button></div></div>`}).join(''):'<p class="mu">No friend requests.</p>'}</div>
+  <h2 class="serif">Group invites</h2>
+  <div class="flist">${inv.length?inv.map(([gid,v])=>`<div class="frow"><span class="nm"><b>${esc(v.name||gid)}</b><small>Invited by ${esc(v.byName||'someone')} · ${v.ts?new Date(v.ts).toLocaleDateString():''}</small></span><div class="row"><button class="pri" data-a="acceptg" data-id="${gid}">Join</button><button data-a="declineg" data-id="${gid}">Decline</button></div></div>`).join(''):'<p class="mu">No group invites.</p>'}</div>`};
+
 function sessDlg(o){const hs=Object.entries(S.habits).filter(([i,h])=>!h.archived||i===o.h);const id=o.id||push(ref(db)).key;
   $('dlg').innerHTML=`<form data-f="sess"><h3>${o.id?'Edit session':'Add study time'}</h3><label>Subject<select name="h">${hs.map(([i,h])=>`<option value="${i}" ${i===o.h?'selected':''}>${esc(h.name)}</option>`).join('')}</select></label>
   <label>Minutes<input name="m" type="number" min="1" max="720" required value="${o.m||''}"></label><label>Date<input name="d" type="date" required min="${add(today(),-365)}" max="${today()}" value="${o.d||today()}"></label>
@@ -681,16 +764,20 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   
   if(a==='hdel'&&confirm('Remove this activity? Its history is kept.'))run(()=>W({[`habits/${id}/archived`]:true}));
   /* social */
-  if(a==='btab'){S.boardTab=b.dataset.t;if(S.boardTab==='friends')loadFriendsLb().then(render);if(S.boardTab==='groups'&&S.selGroup)loadGroupLb(S.selGroup);return render()}
+  if(a==='btab')return;
   if(a==='refreshflb')return loadFriendsLb().then(()=>{toast('Scores refreshed');render()});
   if(a==='refreshglb')return loadGroupLb(id);
   if(a==='selg'){S.selGroup=id;loadGroupLb(id);return render()}
   if(a==='viewu')return showUserProfile(id,b.dataset.n);
-  if(a==='acceptf')return run(async()=>{const from=id;await WR({[`users/${S.uid}/friends/${from}`]:true,[`users/${from}/friends/${S.uid}`]:true,[`users/${S.uid}/incoming/${from}`]:null,[`users/${from}/outgoing/${S.uid}`]:null});toast('Friend added!');loadFriendsLb().then(render)});
+  if(a==='acceptf')return run(async()=>{const from=id;const theirName=(S.incoming[from]||{}).fromName||await fetchDisplay(from);const myName=dname();
+    await WR({[`users/${S.uid}/friends/${from}`]:{name:theirName,since:Date.now()},[`users/${from}/friends/${S.uid}`]:{name:myName,since:Date.now()},[`users/${S.uid}/incoming/${from}`]:null,[`users/${from}/outgoing/${S.uid}`]:null});
+    nameCache[from]=theirName;toast('Friend added!');S._flbLoaded=0;loadFriendsLb().then(render)});
   if(a==='rejectf')return run(async()=>{await WR({[`users/${S.uid}/incoming/${id}`]:null,[`users/${id}/outgoing/${S.uid}`]:null});toast('Request declined')});
   if(a==='cancelf')return run(async()=>{await WR({[`users/${S.uid}/outgoing/${id}`]:null,[`users/${id}/incoming/${S.uid}`]:null});toast('Request cancelled')});
   if(a==='unfriend'){if(!confirm('Remove this friend?'))return;return run(async()=>{await WR({[`users/${S.uid}/friends/${id}`]:null,[`users/${id}/friends/${S.uid}`]:null});toast('Friend removed');loadFriendsLb().then(render)})}
-  if(a==='acceptg')return run(async()=>{const gid=id,inv=S.invites[gid];if(!inv)return;await WR({[`groups/${gid}/members/${S.uid}`]:{role:'member',joinedAt:Date.now()},[`users/${S.uid}/groups/${gid}`]:{name:inv.name||gid,role:'member'},[`users/${S.uid}/invites/${gid}`]:null});toast('Joined group!');S.selGroup=gid;loadGroupLb(gid)});
+  if(a==='acceptg')return run(async()=>{const gid=id,inv=S.invites[gid];if(!inv)return;
+    await WR({[`groups/${gid}/members/${S.uid}`]:{role:'member',joinedAt:Date.now(),name:dname(),a:/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1'},[`users/${S.uid}/groups/${gid}`]:{name:inv.name||gid,role:'member'},[`users/${S.uid}/invites/${gid}`]:null});
+    toast('Joined group!');S.selGroup=gid;if(S.view==='groups')loadGroupLb(gid);else render()});
   if(a==='declineg')return run(async()=>{await W({[`invites/${id}`]:null});toast('Invite declined')});
   if(a==='leaveg'){if(!confirm('Leave this group?'))return;return run(async()=>{await WR({[`groups/${id}/members/${S.uid}`]:null,[`users/${S.uid}/groups/${id}`]:null});if(S.selGroup===id)S.selGroup=null;toast('Left group');render()})}
   if(a==='delg'){if(!confirm('Delete this group for everyone?'))return;return run(async()=>{const mems=(await get(ref(db,`groups/${id}/members`))).val()||{};const u={[`groups/${id}`]:null};for(const m of Object.keys(mems))u[`users/${m}/groups/${id}`]=null;await WR(u);if(S.selGroup===id)S.selGroup=null;toast('Group deleted');render()})}
@@ -745,8 +832,8 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
     toast('Friend request sent to '+uname);f.reset()});
   if(k==='createg')run(async()=>{const name=F.get('n').trim().slice(0,40);if(!name)return toast('Enter a group name.');
     const gid=push(ref(db,'groups')).key;
-    await WR({[`groups/${gid}/info`]:{name,owner:S.uid,createdAt:Date.now()},[`groups/${gid}/members/${S.uid}`]:{role:'owner',joinedAt:Date.now()},[`users/${S.uid}/groups/${gid}`]:{name,role:'owner'}});
-    toast('Group created!');S.selGroup=gid;S.boardTab='groups';loadGroupLb(gid)});
+    await WR({[`groups/${gid}/info`]:{name,owner:S.uid,createdAt:Date.now()},[`groups/${gid}/members/${S.uid}`]:{role:'owner',joinedAt:Date.now(),name:dname(),a:/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1'},[`users/${S.uid}/groups/${gid}`]:{name,role:'owner'}});
+    toast('Group created!');S.selGroup=gid;S.view='groups';location.hash='#groups';loadGroupLb(gid)});
   if(k==='inviteg')run(async()=>{const uname=F.get('u').trim().toLowerCase(),gid=F.get('gid');
     const er=$('ierr');if(er)er.textContent='';
     const toUid=await resolveUsername(uname);
@@ -790,7 +877,7 @@ function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(fro
   S.win=add(today(),-14);
   L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed();else ensureUsernameIndex()});L('habits',v=>{S.habits=v;S.ready=1});
   L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);L('avatar',v=>S.avatar=typeof v==='string'?v:'');
-  L('friends',v=>S.friends=v||{});L('incoming',v=>S.incoming=v||{});L('outgoing',v=>S.outgoing=v||{});
+  L('friends',v=>{S.friends=v||{};for(const[id,val]of Object.entries(S.friends)){if(val&&typeof val==='object'&&val.name)nameCache[id]=val.name}});L('incoming',v=>S.incoming=v||{});L('outgoing',v=>S.outgoing=v||{});
   L('groups',v=>S.groups=v||{});L('invites',v=>S.invites=v||{});
   const t=getT();if(t&&chk(t))toast('A session was interrupted. Only time up to the last check-in was kept.');route();setInterval(()=>{if(S.uid)pubStats()},60000);pubStats()}
 onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];(S.lbU||[]).forEach(f=>f());S.lbU=[];Object.assign(S,{lbW:0,lb:{},lbMine:null,lbRdy:0,ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,avatar:'',friends:{},incoming:{},outgoing:{},groups:{},invites:{},boardTab:'world',selGroup:null,flb:[],glb:[],gMembers:{},gLoading:0});seeding=0;
