@@ -164,6 +164,10 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
 .avs{display:flex;flex-wrap:wrap;gap:var(--s3)}.avs button{padding:4px;border-radius:50%;min-height:0;line-height:0}.avs [aria-pressed=true]{border-color:var(--cy);box-shadow:0 0 0 2px var(--cy)}
 .chip{display:inline-flex;gap:var(--s2);align-items:center;margin:0;color:var(--tx)}.chip input{width:auto;min-height:0}.up input{margin-top:var(--s2)}.pform{display:grid;gap:var(--s2);max-width:560px}.pform label{margin:0}
 @media(max-width:720px){nav a[data-v=settings]{display:none}}
+/* ===== leaderboard ===== */
+.lbl{display:grid;gap:var(--s2)}.lbr{display:grid;grid-template-columns:34px 36px minmax(0,1fr) auto;gap:var(--s3);align-items:center;padding:var(--s3);border:1px solid var(--line);border-radius:12px;background:rgba(9,14,17,.4)}
+.lbr.me{border-color:var(--cy);background:rgba(34,211,238,.08)}.lbr .rk{text-align:center;color:var(--cy)}.lbr .nm{display:grid;gap:var(--s1);min-width:0;overflow-wrap:anywhere}.lbd{margin:0}.lbd i{width:12px;height:12px}.sc2{font-size:1.2rem;color:var(--sea)}
+@media(max-width:420px){nav a{font-size:.66rem;padding:6px 3px}}
 </style>
 </head>
 <body>
@@ -198,6 +202,7 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
     <a href="#habits" data-v="habits">✓ <span>Daily Habits</span></a>
     <a href="#progress" data-v="progress">▦ <span>Progress</span></a>
     <a href="#rewards" data-v="rewards">✦ <span>Rewards</span></a>
+    <a href="#board" data-v="board">🏆 <span>Board</span></a>
     <a href="#profile" data-v="profile">☺ <span>Profile</span></a>
     <a href="#settings" data-v="settings">⚙ <span>Settings</span></a>
     <div class="sp"></div><small><i id="dot"></i><span id="dtx">connecting</span></small>
@@ -210,7 +215,7 @@ main>.sub{margin-bottom:calc(-1*var(--s2))}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,deleteUser,reauthenticateWithCredential,EmailAuthProvider} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
-import {getDatabase,ref,onValue,update,get,push,query,orderByKey,startAt} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
+import {getDatabase,ref,onValue,update,get,push,query,orderByKey,startAt,orderByChild,limitToLast,serverTimestamp} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
 /* ===== FIREBASE CONFIG (replace if you use another project) ===== */
 const FIREBASE_CONFIG={apiKey:"AIzaSyAE1xdG_prufAMiBLdkQfwHqJokCjYORUQ",authDomain:"habit-pulse-rg.firebaseapp.com",databaseURL:"https://habit-pulse-rg-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"habit-pulse-rg",appId:"1:592280103446:web:3b74a69899e6f804eb2337"};
@@ -369,7 +374,7 @@ function earned(){const o=S.rw.days||{},n=S.rw.d2||{},cut=S.rw.cutover||'0';let 
   return p+20*Object.keys(S.rw.weeks||{}).length+15*Object.keys(S.rw.back||{}).length}
 const avail=()=>earned()-Object.keys(S.rw.unlocked||{}).reduce((a,i)=>a+(CAT[i]?.c||0),0);
 let syncing=0;
-function sync(){if(!S.uid||S.dying||syncing||Object.keys(S.got).length<6)return;const u={},hs=H(),notes=[];let gain=0;
+function sync(){lbTick();if(!S.uid||S.dying||syncing||Object.keys(S.got).length<6)return;const u={},hs=H(),notes=[];let gain=0;
   if(!S.rw.cutover){u['rewards/cutover']=today();u['profile/schema']=2}
   const cut=S.rw.cutover||today(),cats=CATS.filter(c=>hs.some(h=>h.cat===c.id));
   for(const[d,v]of Object.entries(S.daily)){if(d<cut)continue;const old=(S.rw.d2||{})[d]||{},c={...(old.c||{})};let a=old.a||0,n=0;
@@ -417,10 +422,33 @@ V.profile=()=>{const pr=S.profile,sc=(pr.showcase||'').split(','),ms=Object.keys
   <h2 class="serif">Edit profile</h2><form class="card pform" data-f="prof"><label>Display name<input name="n" maxlength="30" required value="${esc(dname())}"></label><label>Bio <small id="bc">${wc(pr.bio||'')}/19 words</small><input id="bio" name="b" maxlength="200" value="${esc(pr.bio||'')}" placeholder="A line about your goals"></label><button class="pri">Save profile</button></form>
   <h2 class="serif">Picture</h2><div class="card"><div class="avs">${PRE.map(p=>`<button data-a="avp" data-id="${p[0]}" aria-label="Avatar ${p[0]}" ${(pr.avatar||'p1')===p[0]?'aria-pressed="true"':''}><span class="av" style="--z:44px">${avInner(p[0])}</span></button>`).join('')}</div><div class="row" style="margin-top:var(--s3)"><label class="up">Upload a photo<input type="file" id="avf" accept="image/png,image/jpeg,image/webp"></label>${pr.avatar==='custom'?'<button data-a="avx">Remove photo</button>':''}</div><small class="mu">Photos are cropped to a small square and stored only in your account.</small></div>
   <h2 class="serif">Showcase</h2><div class="card"><p class="mu" style="margin:0 0 var(--s3)">Choose up to 3 badges to display on your nameplate.</p><div class="row">${Object.entries(FAM).map(([i,f])=>`<label class="chip"><input type="checkbox" data-sc="${i}" ${sc.includes(i)?'checked':''} ${ftier(i)?'':'disabled'}> ${f.n}</label>`).join('')}</div><label style="margin-top:var(--s3)">Featured achievement<select data-ft><option value="">None</option>${ms.map(i=>`<option value="${i}" ${pr.featured===i?'selected':''}>${esc(msName(i))}</option>`).join('')}</select></label></div>
-  <p class="mu"><small>Your profile is private. There is no public leaderboard. If one is added later, you will choose whether to take part.</small> <a href="#settings" style="color:var(--cy)">Settings</a></p>`};
+  <p class="mu"><small>Your profile is private unless you join the weekly leaderboard on the Board tab.</small> <a href="#settings" style="color:var(--cy)">Settings</a></p>`};
 function avUp(f){if(!f)return;if(f.size>5e6||!/^image\/(png|jpeg|webp)$/.test(f.type))return toast('Choose a PNG, JPEG or WebP image under 5 MB.');
   const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=128;const m=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,128,128);URL.revokeObjectURL(u);const d=c.toDataURL('image/jpeg',.8);if(d.length>28000)return toast('That image is too detailed. Try another.');run(async()=>{await W({avatar:d,'profile/avatar':'custom'});toast('Photo updated.')})};im.onerror=()=>toast('That image could not be read.');im.src=u}
 document.addEventListener('input',e=>{if(e.target.id==='bio'){const n=wc(e.target.value);$('bc').textContent=n+'/19 words';$('bc').style.color=n>19?'#fca5a5':''}});
+/* ===== leaderboard: consistency only (10 per qualifying day, +20 for 7/7). Minutes and activity count never matter. ===== */
+async function WR(u){const p=update(ref(db),u);if(S.online)await p;else{p.catch(()=>{});toast('Offline: saved on this device, will sync when reconnected.')}}
+const lbWk=()=>{const t=today(),ws=add(t,-((new Date(t+'T00:00').getDay()+6)%7));return{ws,w:Math.floor((num(ws)+3)/7)}};
+function lbTick(){if(!S.uid||S.dying||Object.keys(S.got).length<6)return;lbSub();lbPub()}
+function lbSub(){const{w}=lbWk();if(S.lbW===w)return;(S.lbU||[]).forEach(f=>f());S.lbW=w;S.lb={};S.lbMine=null;S.lbRdy=0;
+  S.lbU=[onValue(query(ref(db,'leaderboard/'+w),orderByChild('s'),limitToLast(20)),s=>{S.lb=s.val()||{};render()},e=>toast('Could not load the leaderboard ('+e.code+').')),
+    onValue(ref(db,`leaderboard/${w}/${S.uid}`),s=>{S.lbMine=s.val();S.lbRdy=1;lbPub();render()})]}
+function lbPub(){if(S.profile.visibility!=='public'||!S.lbRdy||S.lbBusy)return;const{ws,w}=lbWk(),t=today(),days={},p=`leaderboard/${w}/${S.uid}`,m=S.lbMine;
+  for(let d=ws;d<=t;d=add(d,1))if(q(d))days[d]=true;const k=Object.keys(days).length;
+  if(!k){if(m){S.lbBusy=1;update(ref(db),{[p]:null}).catch(()=>{}).finally(()=>S.lbBusy=0)}return}
+  const n=dname().slice(0,30),a=/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1',sc=k*10+(k===7?20:0);
+  if(m&&m.s===sc&&m.n===n&&m.a===a&&Object.keys(m.days||{}).length===k)return;
+  S.lbBusy=1;update(ref(db),{[p]:{s:sc,n,a,w,days,t:serverTimestamp()},[`leaderboard/${w-2}/${S.uid}`]:null,[`leaderboard/${w-3}/${S.uid}`]:null})
+    .catch(e=>{if(!S.lbErr){S.lbErr=1;toast('Could not update the leaderboard ('+(e.code||'error')+'). Check the database rules.')}}).finally(()=>S.lbBusy=0)}
+const mk=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
+V.board=()=>{const{ws}=lbWk(),pub=S.profile.visibility==='public',e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s),mine=S.lbMine,inList=e.some(x=>x[0]===S.uid);
+  const row=([id,r],rk)=>{const me=id===S.uid,dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${r.days?.[d]?'q':''}" title="${d}"></i>`}).join('');
+    return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a)}</span><span class="nm"><span>${esc(r.n)}${me?' <small>(you)</small>':''}</span><span class="dots lbd" role="img" aria-label="Days studied this week">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
+  return`<h1 class="serif">Leaderboard</h1><p class="msg">Compete on consistency, not effort. Studying 20 minutes counts the same as studying 5 hours, so showing up every day is what wins.</p>
+  <div class="card"><div class="row"><span><b>${pub?'You are on the leaderboard':'Join the weekly leaderboard'}</b><br><small>${pub?'Your display name, avatar and study days are visible to other signed-in users.':'Optional. Only your display name, avatar and which days you studied are shared.'}</small></span><button class="${pub?'':'pri'}" data-a="${pub?'lbleave':'lbjoin'}">${pub?'Leave':'Join'}</button></div></div>
+  <h2 class="serif">This week</h2><p class="mu sub">Week of ${ws}, Monday to Sunday. It starts fresh every week.</p>
+  <div class="lbl">${e.length?e.map(x=>row(x,1+e.filter(y=>y[1].s>x[1].s).length)).join(''):'<p class="mu">No one is on the board yet this week. A qualifying day puts you on it.</p>'}${pub&&mine&&!inList?row([S.uid,mine],'·'):''}</div>
+  <h2 class="serif">How scoring works</h2><div class="card"><p style="margin:0">10 points for each day you study 20 minutes or more, plus 20 for a perfect 7-day week. Minutes beyond 20 never add points, and the number of activities doesn’t matter. Your private points, subjects, minutes and photo are never shared.</p></div>`};
 /* ===== dialogs ===== */
 function sessDlg(o){const hs=Object.entries(S.habits).filter(([i,h])=>!h.archived||i===o.h);const id=o.id||push(ref(db)).key;
   $('dlg').innerHTML=`<form data-f="sess"><h3>${o.id?'Edit session':'Add study time'}</h3><label>Subject<select name="h">${hs.map(([i,h])=>`<option value="${i}" ${i===o.h?'selected':''}>${esc(h.name)}</option>`).join('')}</select></label>
@@ -442,6 +470,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b
   if(a==='newact'){const c=b.dataset.k;$('dlg').innerHTML=`<form data-f="act"><h3>New activity</h3><label>Category<select name="c">${CATS.map(x=>`<option value="${x.id}" ${x.id===c?'selected':''}>${x.n} · ${x.sub}</option>`).join('')}</select></label><label>Name<input name="n" maxlength="40" required placeholder="e.g. Mathematics, Running, Guitar"></label><label>Icon<select name="i">${ICONS.map(i=>`<option>${i}</option>`).join('')}</select></label><label>Daily target (minutes)<input name="m" type="number" min="5" max="600" value="30" required></label><div class="row"><button type="button" data-a="close">Cancel</button><button class="pri">Add</button></div></form>`;return $('dlg').showModal()}
   if(a==='avp')return run(()=>W({'profile/avatar':id}));
   if(a==='avx')return run(()=>W({avatar:null,'profile/avatar':'p1'}));
+  if(a==='lbjoin'){if(confirm('Join the weekly leaderboard? Other signed-in users will see your display name, avatar and which days this week you studied. Your username, subjects, minutes and photo stay private. You can leave any time.'))run(async()=>{await W({'profile/visibility':'public'});toast('You joined the weekly leaderboard.')});return}
+  if(a==='lbleave')return run(async()=>{const w0=lbWk().w,u0={['users/'+S.uid+'/profile/visibility']:'private'};for(let i=0;i<4;i++)u0[`leaderboard/${w0-i}/${S.uid}`]=null;await WR(u0);toast('You left the leaderboard.')});
   if(a==='quick')return run(()=>commit([{d:today(),id:push(ref(db)).key,rec:{habitId:id,habitName:S.habits[id].name,seconds:600,startedAt:Date.now(),endedAt:Date.now(),source:'manual'}}]));
   if(a==='buy')return run(async()=>{const c=CAT[id];if(!c||c.old||S.rw.unlocked?.[id]||lock(c).length)return toast('That reward is still locked.');if(avail()<c.c)return toast('Not enough Forge Points yet.');await W({['rewards/unlocked/'+id]:Date.now()});toast('✦ Unlocked: '+c.n)});
   if(a==='use')return run(()=>W({['rewards/sel/'+b.dataset.k]:id==='none'?null:id}));
@@ -471,8 +501,9 @@ document.addEventListener('submit',e=>{const f=e.target,k=f.dataset.f;if(!k)retu
   if(k==='del')run(async()=>{const u=auth.currentUser,er=$('derr');
     try{await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,F.get('p')))}catch(x){return er.textContent=x.code==='auth/network-request-failed'?'Network problem. Try again.':'Password is incorrect.'}
     if(!S.online)return er.textContent='Connect to the internet first.';
+    {const w0=lbWk().w,u0={};for(let i=0;i<4;i++)u0[`leaderboard/${w0-i}/${S.uid}`]=null;await update(ref(db),u0).catch(()=>{})}
     S.dying=1;await update(ref(db,'users/'+S.uid),{profile:null,avatar:null,habits:null,daily:null,sessions:null,chapters:null,rewards:null});setT(null);await deleteUser(u);$('dlg').close()});
-  if(k==='prof')run(async()=>{const n=F.get('n').trim().slice(0,30),b=F.get('b').trim();if(!n)return toast('Add a display name.');if(wc(b)>19)return toast('Keep your bio under 20 words.');await W({'profile/displayName':n,'profile/bio':b||null,'profile/visibility':'private'});toast('Profile saved.')});
+  if(k==='prof')run(async()=>{const n=F.get('n').trim().slice(0,30),b=F.get('b').trim();if(!n)return toast('Add a display name.');if(wc(b)>19)return toast('Keep your bio under 20 words.');await W({'profile/displayName':n,'profile/bio':b||null,'profile/visibility':S.profile.visibility||'private'});toast('Profile saved.')});
   if(k==='act')run(async()=>{const n=F.get('n').trim().slice(0,40),m=Math.round(+F.get('m')),c=F.get('c');
     if(!n||!(m>=5&&m<=600)||!CC[c])return toast('Give it a name and a target of 5 to 600 minutes.');
     if(H().filter(h=>h.cat===c).length>=12)return toast('That category has 12 activities. Remove one first.');
@@ -504,7 +535,7 @@ function boot(){const b=`users/${S.uid}/`,L=(p,fn,from)=>unsubs.push(onValue(fro
   L('profile',v=>{S.profile=v;if(!v.seeded&&!S.dying)seed()});L('habits',v=>{S.habits=v;S.ready=1});
   L('daily',v=>S.daily=v,add(today(),-400));L('sessions',v=>S.sessions=v,S.win);L('chapters',v=>S.chapters=v);L('rewards',v=>S.rw=v);L('avatar',v=>S.avatar=typeof v==='string'?v:'');
   const t=getT();if(t&&chk(t))toast('A session was interrupted. Only time up to the last check-in was kept.');route()}
-onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];Object.assign(S,{ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,avatar:''});seeding=0;
+onAuthStateChanged(auth,u=>{unsubs.forEach(f=>f());unsubs=[];(S.lbU||[]).forEach(f=>f());S.lbU=[];Object.assign(S,{lbW:0,lb:{},lbMine:null,lbRdy:0,ready:0,habits:{},daily:{},sessions:{},chapters:{},profile:{},rw:{},got:{},dying:0,avatar:''});seeding=0;
   if(!u){S.uid=null;show('auth');return}
   S.uid=u.uid;S.user=u;show('app');boot()});
 onValue(ref(db,'.info/connected'),s=>{S.online=!!s.val();$('dot').className=S.online?'on':'';$('dtx').textContent=S.online?'online':'offline'});
