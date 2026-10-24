@@ -433,16 +433,16 @@ function lbTick(){if(!S.uid||S.dying||Object.keys(S.got).length<6)return;lbSub()
 function lbSub(){const{w}=lbWk();if(S.lbW===w)return;(S.lbU||[]).forEach(f=>f());S.lbW=w;S.lb={};S.lbMine=null;S.lbRdy=0;
   S.lbU=[onValue(query(ref(db,'leaderboard/'+w),orderByChild('s'),limitToLast(20)),s=>{S.lb=s.val()||{};render()},e=>toast('Could not load the leaderboard ('+e.code+').')),
     onValue(ref(db,`leaderboard/${w}/${S.uid}`),s=>{S.lbMine=s.val();S.lbRdy=1;lbPub();render()})]}
-function lbPub(){if(S.profile.visibility!=='public'||!S.lbRdy||S.lbBusy)return;const{ws,w}=lbWk(),t=today(),days={},p=`leaderboard/${w}/${S.uid}`,m=S.lbMine;
-  for(let d=ws;d<=t;d=add(d,1))if(q(d))days[d]=true;const k=Object.keys(days).length;
+function lbPub(){if(S.profile.visibility!=='public'||!S.lbRdy||S.lbBusy)return;const{ws,w}=lbWk(),t=today(),ds=[],p=`leaderboard/${w}/${S.uid}`,m=S.lbMine;
+  for(let d=ws;d<=t;d=add(d,1))if(q(d))ds.push(d);const k=ds.length;
   if(!k){if(m){S.lbBusy=1;update(ref(db),{[p]:null}).catch(()=>{}).finally(()=>S.lbBusy=0)}return}
   const n=dname().slice(0,30),a=/^p[1-8]$/.test(S.profile.avatar||'')?S.profile.avatar:'p1',sc=k*10+(k===7?20:0);
-  if(m&&m.s===sc&&m.n===n&&m.a===a&&Object.keys(m.days||{}).length===k)return;
-  S.lbBusy=1;update(ref(db),{[p]:{s:sc,n,a,w,days,t:serverTimestamp()},[`leaderboard/${w-2}/${S.uid}`]:null,[`leaderboard/${w-3}/${S.uid}`]:null})
+  if(m&&m.s===sc&&m.n===n&&m.a===a&&ds.every((d,i)=>m['d'+i]===d)&&!m['d'+k])return;
+  S.lbBusy=1;update(ref(db),{[p]:{s:sc,n,a,w,t:serverTimestamp(),...Object.fromEntries(ds.map((d,i)=>['d'+i,d]))},[`leaderboard/${w-2}/${S.uid}`]:null,[`leaderboard/${w-3}/${S.uid}`]:null})
     .catch(e=>{if(!S.lbErr){S.lbErr=1;toast('Could not update the leaderboard ('+(e.code||'error')+'). Check the database rules.')}}).finally(()=>S.lbBusy=0)}
 const mk=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
 V.board=()=>{const{ws}=lbWk(),pub=S.profile.visibility==='public',e=Object.entries(S.lb||{}).sort((a,b)=>b[1].s-a[1].s),mine=S.lbMine,inList=e.some(x=>x[0]===S.uid);
-  const row=([id,r],rk)=>{const me=id===S.uid,dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${r.days?.[d]?'q':''}" title="${d}"></i>`}).join('');
+  const row=([id,r],rk)=>{const me=id===S.uid,set=new Set(Array.from({length:7},(_,i)=>r['d'+i])),dots=Array.from({length:7},(_,i)=>{const d=add(ws,i);return`<i class="${set.has(d)?'q':''}" title="${d}"></i>`}).join('');
     return`<div class="lbr ${me?'me':''}"><b class="rk">${mk(rk)}</b><span class="av" style="--z:36px">${avInner(r.a)}</span><span class="nm"><span>${esc(r.n)}${me?' <small>(you)</small>':''}</span><span class="dots lbd" role="img" aria-label="Days studied this week">${dots}</span></span><b class="sc2">${r.s}</b></div>`};
   return`<h1 class="serif">Leaderboard</h1><p class="msg">Compete on consistency, not effort. Studying 20 minutes counts the same as studying 5 hours, so showing up every day is what wins.</p>
   <div class="card"><div class="row"><span><b>${pub?'You are on the leaderboard':'Join the weekly leaderboard'}</b><br><small>${pub?'Your display name, avatar and study days are visible to other signed-in users.':'Optional. Only your display name, avatar and which days you studied are shared.'}</small></span><button class="${pub?'':'pri'}" data-a="${pub?'lbleave':'lbjoin'}">${pub?'Leave':'Join'}</button></div></div>
